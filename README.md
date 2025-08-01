@@ -120,9 +120,7 @@ sudo docker login
 ./build.sh llvm
 ```
 
-### Build the Serverless function images
-
-#### Build the container environment and rust environment for Fission function image:
+### Build the container environment and rust environment for Fission function image:
 
 ```bash
 cd quilt/dockerfiles/Fission/container-based/fission-env
@@ -130,6 +128,8 @@ cd quilt/dockerfiles/Fission/container-based/fission-env
 cd quilt/dockerfiles/Env/rust_env
 ./build.sh
 ```
+
+## Instructions about how to build the serverless function images
 
 #### Build Function Images
 - The structure of function images in the [benchmark](https://github.com/eniac/quilt/tree/main/benchmark) directory
