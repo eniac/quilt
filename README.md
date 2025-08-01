@@ -122,21 +122,17 @@ sudo docker login
 
 ### Build the Serverless function images
 
-- Build the container environment for Fission function image:
+#### Build the container environment and rust environment for Fission function image:
 
 ```bash
 cd quilt/dockerfiles/Fission/container-based/fission-env
 ./build.sh
-```
-
-- Build the rust environment for Fission function image:
-
-```bash
 cd quilt/dockerfiles/Env/rust_env
 ./build.sh
 ```
 
-- Build function images
+#### Build Function Images
+- The structure of function images in the [benchmark](https://github.com/eniac/quilt/tree/main/benchmark) directory
   + `DeathStarBench` directory: original function code
   + `DeathStarBench_fakedb` directory: function code with fake DB accesses.
   + `DeathStarBench_ContainerMerged_fakedb` directory: function code with fake DB accesses for container-based merging.
@@ -150,7 +146,7 @@ cd quilt/benchmark/DeathStarBench/social_network/functions
 ./build.sh build_fission_c
 ```
 
-### Build Merged Function Images
+#### Build Merged Workflow Images
 
 - An example of merging a workflow
 
@@ -166,7 +162,10 @@ cd quilt/benchmark/DeathStarBench/social_network/functions/merge
 ./build.sh merge_fission compose-post funcTrees/funcTree.compose_post
 ```
 
-- In the last command, the workflow file `funcTree.compose_post` specifies how functions are connected within a workflow. The other workflow files referenced in this composition can be found in the `funcTrees` directory. The root function name serves as the entry point of the workflow and is used to name the merged workflow image.
+- In the last command:
+  + the workflow file `funcTree.compose_post` specifies how functions are connected within a workflow.
+    * The other workflow files can be found in the `funcTrees` directory.
+  + The `root function name`serves as the entry point of the workflow and is used to name the merged workflow image.
 
 # Run our experiments
 
