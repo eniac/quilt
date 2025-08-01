@@ -1,0 +1,5 @@
+upload-user-with-username compose-review-upload-user-id
+compose-review-upload-user-id compose-and-upload
+compose-and-upload store-review
+compose-and-upload upload-user-review
+compose-and-upload upload-movie-review

@@ -1,0 +1,32 @@
+[
+  {
+    "hostname": "hostname.1.com",
+    "ip": "1.2.3.4",
+    "name":"machine1",
+    "role":"storage"
+  },
+  {
+    "hostname": "hostname.2.com",
+    "ip": "1.2.3.5",
+    "name":"machine2",
+    "role":"fission"
+  },
+  {
+    "hostname": "hostname.3.com",
+    "ip": "1.2.3.6",
+    "name":"machine3",
+    "role":"fission-function"
+  },
+  {
+    "hostname": "hostname.4.com",
+    "ip": "1.2.3.7",
+    "name": "machine4",
+    "role": "fission-function"
+  },
+  {
+    "hostname": "hostname.5.com",
+    "ip": "1.2.3.8",
+    "name": "machine5",
+    "role": "fission-function"
+  }
+]

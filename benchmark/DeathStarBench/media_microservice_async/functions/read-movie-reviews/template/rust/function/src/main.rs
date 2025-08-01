@@ -1,0 +1,36 @@
+use OpenFaaSRPC::{make_rpc, get_arg_from_caller, send_return_value_to_caller,*};
+use DbInterface::*;
+use std::{fs::read_to_string, collections::HashMap, time::{SystemTime,Duration, Instant}};
+use redis::{Commands};
+use std::thread;
+
+fn main() {
+  let input: String = get_arg_from_caller();
+//  let now = Instant::now();
+  let review_info: ReadMovieReviewArgs = serde_json::from_str(&input).unwrap();
+
+  let redis_uri = get_redis_rw_uri();
+  let redis_client = redis::Client::open(&redis_uri[..]).unwrap();
+  let mut con = redis_client.get_connection().unwrap();
+
+  let movie_id: String = format!("movie-review:{}", review_info.movie_id);
+
+  // TODO set the options to be NX
+  let res: Vec<String> = con.zrevrange(&movie_id[..], review_info.start as isize, (review_info.stop-1) as isize).unwrap();
+ 
+  let mut review_ids: Vec<i64> = res.iter().map(|x| x[..].parse::<i64>().unwrap()).collect();
+  let read_reviews_args = ReadReviewsArgs {
+    review_ids: review_ids,
+  };
+  let serialized = serde_json::to_string(&read_reviews_args).unwrap(); 
+  
+  let handle = thread::spawn(move || {
+    make_rpc("read-reviews", serialized)
+  });
+
+  let reviews = handle.join().unwrap();
+//  let new_now =  Instant::now();
+//  println!("SocialGraphUnfollow: {:?}", new_now.duration_since(now));
+  send_return_value_to_caller(reviews);
+}
+

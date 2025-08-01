@@ -1,0 +1,2152 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fission-buildermgr
+  namespace: fission
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fission-executor
+  namespace: fission
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fission-fluentbit
+  namespace: fission
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fission-kubewatcher
+  namespace: fission
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fission-fetcher
+  namespace: fission-function
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fission-builder
+  namespace: fission-function
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fission-kafka
+  namespace: fission
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fission-keda
+  namespace: fission
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fission-router
+  namespace: fission
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fission-storagesvc
+  namespace: fission
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fission-timer
+  namespace: fission
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fission-webhook
+  namespace: fission
+---
+apiVersion: v1
+data:
+  ca.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURGVENDQWYyZ0F3SUJBZ0lRR0NzMVRybUpJVnpzcWQwZlZtZUdCekFOQmdrcWhraUc5dzBCQVFzRkFEQVYKTVJNd0VRWURWUVFERXdwbWFYTnphVzl1TFdOaE1CNFhEVEkxTURjek1URTNNVFkwT1ZvWERUTXdNRGN6TURFMwpNVFkwT1Zvd0ZURVRNQkVHQTFVRUF4TUtabWx6YzJsdmJpMWpZVENDQVNJd0RRWUpLb1pJaHZjTkFRRUJCUUFECmdnRVBBRENDQVFvQ2dnRUJBSzhwQnU1T0xPQWRadW9kKy9OU0ZiU0tsbUVnQnhwTDhkZHRidmtjVjRWakI0RE4KN0dseitnQk9yRDB5dW5NbkJJRXRMRW9IYmtkT05Sb29xNHA0UVQwL29BVFltU2dVbTh5Yk9JYnY0QVpPUnVPLwo5OGNsZFZiNXo0TVN1OFN1T0oxM0tEY05nTnZFMTVhWFdZczlSTnFzZGJraE8yaUZjYlhjbjQraWNhYXE4bnRECmwrbG83cXh4TFhucFgzcU82YjFoeHJ2TWViNWhqN0Q2SXprVTcyVmI2VUpJdVBEMHNxS0cxM05USzhDN2tVZTkKZFRtUVRCQW1JS2VDaFFzMWdadEE2emFVbmNsallGV0E0aTFDMjM3bll1NWFSZC9BR0tRdS9yVFJwV2FIa2xvVgp1WEZidGhsQndGSGlpUmk0YVJHcFdLN1FhdTFEWFZTNUN3NU9YRmNDQXdFQUFhTmhNRjh3RGdZRFZSMFBBUUgvCkJBUURBZ0trTUIwR0ExVWRKUVFXTUJRR0NDc0dBUVVGQndNQkJnZ3JCZ0VGQlFjREFqQVBCZ05WSFJNQkFmOEUKQlRBREFRSC9NQjBHQTFVZERnUVdCQlMzM1Y4MnZud09VSmRQdnA2NjIyb3A3US9zclRBTkJna3Foa2lHOXcwQgpBUXNGQUFPQ0FRRUFoTzFCdUQwTjNHWGMvTnNhK1BqYjJsWVYwSVBHTlMwelZVK1RtN09nMFJuMkNNcjFKK1cyCmlqU2o2Kzd6c014WSt1UUxNUm1MWi83Yk5WYzBkV0pQdFJBZVFzY2xHUUZYTDdacGQ2ZDNDTzB6ZXFCN01lSG8KYzdNTXd3VnZKbHVnSDl4eXVBRG9BRlEwcWYxeDJ4ZzdjMy9CZmRLaWxkc2JSN2l2RE8rcmpsRDdvU1c5YTFiTApSTXFDc0VpNWdnSm42Nm5mOVVGbk1sS2ZuR1kyS1hFZ1hIanlBbjg1Wk90b1lhMEpEbE9QaUJSOXFicnVWM1J6CkdrU0loWHFQWk42RzlRK0VrUDFUYlBqTUx1SHduMjZ6WThrSytiSWVGMHk0akUxODlTYVVubm1QNktWQmZyaVoKNVQwbzZBUE9ZTjIyR2lZMjhhVkVCT1RDMlU5dFpwdEdwdz09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+  tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURlakNDQW1LZ0F3SUJBZ0lRRXVJclhLSzBYVGNrQ1JhZUorOVpmekFOQmdrcWhraUc5dzBCQVFzRkFEQVYKTVJNd0VRWURWUVFERXdwbWFYTnphVzl1TFdOaE1CNFhEVEkxTURjek1URTNNVFkwT1ZvWERUTXdNRGN6TURFMwpNVFkwT1Zvd0pqRWtNQ0lHQTFVRUF4TWJkMlZpYUc5dmF5MXpaWEoyYVdObExtWnBjM05wYjI0dWMzWmpNSUlCCklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF2cksrMlhLV3RkZ1NybzhCdjRkdUZTRW0KWnd4Mi9Vdm12UE05cGtiQWxtN0orb1BqbVhNZHlXYXgveDYyOEMzWE10OUJiQVJvdXpKL1RVcFFWNnFBNlgwTgp0dWVBWjhyMnNWVzNhTCtsTEJ5d1JmWWwzYjlLeEtRbm43M3gvdkJ4TGdPM2lhOVVvWUxPZkg5ZEpROEFHU0FCCnBCYk90R2tUcFp3dkVwZ3JGb0FtOE9JWU1EVEZWZ0J5dG9ueDBMQWE1d3pQbWZxUGxwR3hQaERDUDJ3OEZOU0cKMy8yTDFRRWNJQlJ4enNaL09qU1U0enVtbkFlNElQOWMyTS9rQXllbEdZMm0vdjNTeWNBRHNzUjB4YUZtWncyUQpjQmF6aHdvZHlZcUxDWmJzaWF5VGpERGtVb1hRcmJzYUYycExpdjdoQW9VSmcwV3F6MWhwa0RaYVdXQ2dTUUlECkFRQUJvNEcwTUlHeE1BNEdBMVVkRHdFQi93UUVBd0lGb0RBZEJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjREFRWUkKS3dZQkJRVUhBd0l3REFZRFZSMFRBUUgvQkFJd0FEQWZCZ05WSFNNRUdEQVdnQlMzM1Y4MnZud09VSmRQdnA2NgoyMm9wN1Evc3JUQlJCZ05WSFJFRVNqQklnaHQzWldKb2IyOXJMWE5sY25acFkyVXVabWx6YzJsdmJpNXpkbU9DCktYZGxZbWh2YjJzdGMyVnlkbWxqWlM1bWFYTnphVzl1TG5OMll5NWpiSFZ6ZEdWeUxteHZZMkZzTUEwR0NTcUcKU0liM0RRRUJDd1VBQTRJQkFRQVNqL1hzbnNiemZ0RFVQRHJHbDNZZ215emRVa2U1dC92d285bHh1ek9qeUVrcgpiTDVpNW9sTDZjZzFmQ0swdlBxNFJMZ0RYaDRSb1hTdmlwWTQ1a3RsbnhDbGplcHZIRUZtWU1JMy85WWF6b2tlCktPYmlJekM0VE1DeFoxRGx2VUdJaXlCUmNhV1htK2w5UmJ2c0I0bjlnMklGQmYrSEVIbnVrZW5WeDdXWHdBdVgKK3duNnFTUmt5T0l2dVEyRXN4aExQQWtVWWlIT0VEcFpyR3VsR0x0V1o1cGxneU92dWg4bmd4NmwyRzN0Wno1UAprclZaYmo4ODhLOWEvdTRwMTR0YllSdDJlM1pnZmlWQVFlK0VOOXpKK1R4NmM1am5xU2pTTjdlRVp0dlloa0dhClA5aDNkbzkrZFM1S09sdURUdmJjQ045am5ZZzR1RlVnVkJFM1NkbHkKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+  tls.key: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFb3dJQkFBS0NBUUVBdnJLKzJYS1d0ZGdTcm84QnY0ZHVGU0VtWnd4Mi9Vdm12UE05cGtiQWxtN0orb1BqCm1YTWR5V2F4L3g2MjhDM1hNdDlCYkFSb3V6Si9UVXBRVjZxQTZYME50dWVBWjhyMnNWVzNhTCtsTEJ5d1JmWWwKM2I5S3hLUW5uNzN4L3ZCeExnTzNpYTlVb1lMT2ZIOWRKUThBR1NBQnBCYk90R2tUcFp3dkVwZ3JGb0FtOE9JWQpNRFRGVmdCeXRvbngwTEFhNXd6UG1mcVBscEd4UGhEQ1AydzhGTlNHMy8yTDFRRWNJQlJ4enNaL09qU1U0enVtCm5BZTRJUDljMk0va0F5ZWxHWTJtL3YzU3ljQURzc1IweGFGbVp3MlFjQmF6aHdvZHlZcUxDWmJzaWF5VGpERGsKVW9YUXJic2FGMnBMaXY3aEFvVUpnMFdxejFocGtEWmFXV0NnU1FJREFRQUJBb0lCQUF4dkVPclNjZ0Z5RU5qRgpIZ2p3RW9WSjY2dzNKN2lCQnc3Tm9OakxQdklvRDk4WDA2S2RHd1YzWHRaNnVSU2N0bzM4ZU5KclVLMVkvK3dwCkV1YythS2lndE9EV3hCeHdZMGloaFVPTkVGN1prWVJFUmdpSStSM3NjcUZ6by9oYWt0U2NYUzZhNmg2Y1RleVgKN05tMldrd3BGalpOM3VVc1AwSFNkczdFY1hYR1lSSHgva3FwOHh6TS9sQnowcGlBWEZNZVNEOWpsYnBmcWVESAp4d2VjK25ZM2lyemY0eUFlMElDbTVVb0d6dENadlJmeEszckU5b2N2VER4Y0hJNWN6enQwNURZbEtPTVQ2ek5ZCmN3YmRNaFZqSmR5SEkrYTIwSEkzL1lvSW1UbUQ3dmhuK1ZDTlRjVXFxTmx0cDJwQXBwVUZZM3RSNzhzeTFva2oKc0VWVUtvRUNnWUVBK0JWbUh3U1B0cXhMakExUEpBa1dRMUFiNWRoeTUwNVprc3ZhR2JnWVIwUTFabmJ1TENpMApxZWp2M2Q1U3FwdW1sN2pITnRPaHI2STVlempZWjVGZmducjRacGwvWURjSnBwS2s5bEF4MUdlODM5TlpkZk5qCkNabFZEYitiMjExN3pGOUh5QStBL2hPMWNUWU1aT3ZiZnZMV2grb3ZpK3dpMVYyMTVGV01hb0VDZ1lFQXhNaVEKYVNHdmN6RFRaVHphWUh4VndoVmJ1WGRmU1ZRTTRSaEpyUWt1VUZSbVB0T3RHWmY2WE85RDZmc3ZkZ2NzOGxsUApnOFlReDRXdU13L29zWXhTZWFNRU1ZdFRyM0wrbVFUYTlUZTVMK0E1THR4UllNZy9ZNEdiWnZUVGpJVGlZVXRWCk4vQTNrYXRSVVJQMXcvQ1MwUm15SFpqS3NDRXJpNGJaSWRWMmdja0NnWUJycEQxUE1CZDdWMzdnSWRZNCtJaGsKWkpuMlBOaCtiSXlKR1ZKazNuQUtYQm9mZjNNUVRnazF3QkJ6NEVkV0ozczlVYnQrbW8wSlBBWmM1T2xnNXI3ZQpTcVVGUDR6NUhtaGRranRwZEpwcVl5aWNwWU9ubmhkV3p1VU10aHJXTDlYTGMzd2QzanhHQWg4MEpCTjBwckh5CmYwTitiYXA3dDlYVlpuZkp2eVRTQVFLQmdFbU9NclNwZTd5U0JxS3o4V2paY1BEZ0xPNFJtZE4rRUdaZlBzTG8KU0tDTU83L0dQZER3Und4UC8xSEpxMzd4eGJJOUFnVGVsMDBOUWdVaU1EZVZuUXFNamJlN1BhZTZVMEo5Vng4TQpHak8wRzR2Um5MV1JoR2c4ZlFzcC9wMXEybmZGd2UvcjRjbVlnUWZPYnpJempaMk5maytqMmplbDNuSUVFTXVkCnovTkpBb0dCQU9ERFV4T2Y4cXp4OWx6NWFkN2JKVTFTdU5sakxVTSs3RWkweldXK1A4eEVKL0dQVVhaQk9uUXQKUmFrWG9hTUdWWWU5Z2puMmdCSGNucGM2MUVMVkFKcmVRamRVN21GQm9odmtkRnlhOTdlK2s1UE8yZUhRN1E0VApFaXllSnk0SFpSelM5c3dNWW9NVmRnRjVzek1mQ1JmSWxEaGVGTStCOENXQ01GTFFPRmc0Ci0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tCg==
+kind: Secret
+metadata:
+  labels:
+    app.kubernetes.io/component: webhook-secret
+  name: fission-webhook-certs
+type: Opaque
+---
+apiVersion: v1
+data:
+  config.yaml: Y2FuYXJ5OgogIGVuYWJsZWQ6IGZhbHNlCiAgcHJvbWV0aGV1c1N2YzogIiIKYXV0aDoKICBlbmFibGVkOiBmYWxzZQ==
+kind: ConfigMap
+metadata:
+  name: feature-config
+  namespace: fission
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: fission-storage
+    chart: fission-all-v1.21.0
+    release: fission
+  name: fission-storage-pvc
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 8Gi
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: fission-buildermgr-fission-cr
+  namespace: fission-function
+rules:
+- apiGroups:
+  - fission.io
+  resources:
+  - environments
+  - functions
+  - packages
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+  - patch
+  - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: fission-buildermgr
+  namespace: fission-function
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - pods
+  - services
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - watch
+  - patch
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - list
+  - create
+  - delete
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: fission-executor-fission-cr
+  namespace: fission-function
+rules:
+- apiGroups:
+  - fission.io
+  resources:
+  - environments
+  - functions
+  - packages
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+  - patch
+  - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: fission-executor
+  namespace: fission-function
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - pods
+  - services
+  - replicationcontrollers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - watch
+  - patch
+- apiGroups:
+  - ''
+  resources:
+  - events
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - patch
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ''
+  resources:
+  - serviceaccounts
+  verbs:
+  - create
+  - get
+- apiGroups:
+  - authorization.k8s.io
+  resources:
+  - localsubjectaccessreviews
+  verbs:
+  - create
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - rolebindings
+  - roles
+  verbs:
+  - create
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - deployments/scale
+  - replicasets
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - autoscaling
+  resources:
+  - horizontalpodautoscalers
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - metrics.k8s.io
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: fission-fluentbit
+  namespace: fission-function
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: fission-kubewatcher-fission-cr
+  namespace: fission-function
+rules:
+- apiGroups:
+  - fission.io
+  resources:
+  - environments
+  - functions
+  - kuberneteswatchtriggers
+  - packages
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+  - patch
+  - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: fission-kubewatcher
+  namespace: fission-function
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  - pods
+  - secrets
+  - services
+  - replicationcontrollers
+  - events
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: fission-fission-fetcher
+  namespace: fission-function
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  - secrets
+  verbs:
+  - get
+- apiGroups:
+  - fission.io
+  resources:
+  - packages
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: fission-fission-builder
+  namespace: fission-function
+rules:
+- apiGroups:
+  - fission.io
+  resources:
+  - packages
+  verbs:
+  - get
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  - secrets
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: fission-fission-fetcher-websocket
+  namespace: fission-function
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - events
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+- apiGroups:
+  - ''
+  resources:
+  - pods
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: fission-kafka-fission-cr
+  namespace: fission-function
+rules:
+- apiGroups:
+  - fission.io
+  resources:
+  - environments
+  - functions
+  - messagequeuetriggers
+  - packages
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+  - patch
+  - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: fission-kafka
+  namespace: fission-function
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  - pods
+  - secrets
+  - services
+  - replicationcontrollers
+  - events
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - watch
+  - patch
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  - secrets
+  verbs:
+  - get
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - deployments/scale
+  - replicasets
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: fission-keda-fission-cr
+  namespace: fission-function
+rules:
+- apiGroups:
+  - fission.io
+  resources:
+  - environments
+  - functions
+  - messagequeuetriggers
+  - packages
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+  - patch
+  - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: fission-keda
+  namespace: fission-function
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - pods
+  - services
+  - replicationcontrollers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - watch
+  - patch
+- apiGroups:
+  - ''
+  resources:
+  - events
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - patch
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  - secrets
+  verbs:
+  - get
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - deployments/scale
+  - replicasets
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - keda.sh
+  resources:
+  - scaledjobs
+  - scaledobjects
+  - scaledjobs/finalizers
+  - scaledjobs/status
+  - triggerauthentications
+  - triggerauthentications/status
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - keda.k8s.io
+  resources:
+  - scaledjobs
+  - scaledobjects
+  - scaledjobs/finalizers
+  - scaledjobs/status
+  - triggerauthentications
+  - triggerauthentications/status
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - metrics.k8s.io
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: fission-router-fission-cr
+  namespace: fission-function
+rules:
+- apiGroups:
+  - fission.io
+  resources:
+  - environments
+  - functions
+  - httptriggers
+  - packages
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+  - patch
+  - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: fission-router
+  namespace: fission
+rules:
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingresses
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: fission-storagesvc-fission-cr
+  namespace: fission-function
+rules:
+- apiGroups:
+  - fission.io
+  resources:
+  - packages
+  verbs:
+  - get
+  - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: fission-timer-fission-cr
+  namespace: fission-function
+rules:
+- apiGroups:
+  - fission.io
+  resources:
+  - environments
+  - functions
+  - packages
+  - timetriggers
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+  - patch
+  - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: fission-timer
+  namespace: fission-function
+rules: []
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fission-buildermgr-fission-cr
+  namespace: fission-function
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: fission-buildermgr-fission-cr
+subjects:
+- kind: ServiceAccount
+  name: fission-buildermgr
+  namespace: fission
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fission-buildermgr
+  namespace: fission-function
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: fission-buildermgr
+subjects:
+- kind: ServiceAccount
+  name: fission-buildermgr
+  namespace: fission
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fission-executor-fission-cr
+  namespace: fission-function
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: fission-executor-fission-cr
+subjects:
+- kind: ServiceAccount
+  name: fission-executor
+  namespace: fission
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fission-executor
+  namespace: fission-function
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: fission-executor
+subjects:
+- kind: ServiceAccount
+  name: fission-executor
+  namespace: fission
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fission-fluentbit
+  namespace: fission-function
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: fission-fluentbit
+subjects:
+- kind: ServiceAccount
+  name: fission-fluentbit
+  namespace: fission
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fission-kubewatcher-fission-cr
+  namespace: fission-function
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: fission-kubewatcher-fission-cr
+subjects:
+- kind: ServiceAccount
+  name: fission-kubewatcher
+  namespace: fission
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fission-kubewatcher
+  namespace: fission-function
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: fission-kubewatcher
+subjects:
+- kind: ServiceAccount
+  name: fission-kubewatcher
+  namespace: fission
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fission-fission-fetcher
+  namespace: fission-function
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: fission-fission-fetcher
+subjects:
+- kind: ServiceAccount
+  name: fission-fetcher
+  namespace: fission-function
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fission-fission-builder
+  namespace: fission-function
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: fission-fission-builder
+subjects:
+- kind: ServiceAccount
+  name: fission-builder
+  namespace: fission-function
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fission-fission-fetcher-websocket
+  namespace: fission-function
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: fission-fission-fetcher-websocket
+subjects:
+- kind: ServiceAccount
+  name: fission-fetcher
+  namespace: fission-function
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fission-kafka-fission-cr
+  namespace: fission-function
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: fission-kafka-fission-cr
+subjects:
+- kind: ServiceAccount
+  name: fission-kafka
+  namespace: fission
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fission-kafka
+  namespace: fission-function
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: fission-kafka
+subjects:
+- kind: ServiceAccount
+  name: fission-kafka
+  namespace: fission
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fission-keda-fission-cr
+  namespace: fission-function
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: fission-keda-fission-cr
+subjects:
+- kind: ServiceAccount
+  name: fission-keda
+  namespace: fission
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fission-keda
+  namespace: fission-function
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: fission-keda
+subjects:
+- kind: ServiceAccount
+  name: fission-keda
+  namespace: fission
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fission-router-fission-cr
+  namespace: fission-function
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: fission-router-fission-cr
+subjects:
+- kind: ServiceAccount
+  name: fission-router
+  namespace: fission
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fission-router
+  namespace: fission
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: fission-router
+subjects:
+- kind: ServiceAccount
+  name: fission-router
+  namespace: fission
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fission-storagesvc-fission-cr
+  namespace: fission-function
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: fission-storagesvc-fission-cr
+subjects:
+- kind: ServiceAccount
+  name: fission-storagesvc
+  namespace: fission
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fission-timer-fission-cr
+  namespace: fission-function
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: fission-timer-fission-cr
+subjects:
+- kind: ServiceAccount
+  name: fission-timer
+  namespace: fission
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fission-timer
+  namespace: fission-function
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: fission-timer
+subjects:
+- kind: ServiceAccount
+  name: fission-timer
+  namespace: fission
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    chart: fission-all-v1.21.0
+    svc: executor
+  name: executor
+spec:
+  ports:
+  - port: 80
+    targetPort: 8888
+  selector:
+    svc: executor
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    application: fission-router
+    chart: fission-all-v1.21.0
+    svc: router
+  name: router
+spec:
+  ports:
+  - port: 80
+    targetPort: 8888
+  selector:
+    svc: router
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    application: fission-storage
+    chart: fission-all-v1.21.0
+    svc: storagesvc
+  name: storagesvc
+spec:
+  ports:
+  - port: 80
+    targetPort: 8000
+  selector:
+    svc: storagesvc
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    application: fission-webhook
+    chart: fission-all-v1.21.0
+    svc: webhook-service
+  name: webhook-service
+spec:
+  ports:
+  - port: 443
+    targetPort: 9443
+  selector:
+    svc: webhook-service
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    chart: fission-all-v1.21.0
+    svc: buildermgr
+  name: buildermgr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      svc: buildermgr
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: '8080'
+        prometheus.io/scrape: 'true'
+      labels:
+        svc: buildermgr
+    spec:
+      containers:
+      - args:
+        - --builderMgr
+        - --storageSvcUrl
+        - http://storagesvc.fission
+        command:
+        - /fission-bundle
+        env:
+        - name: FETCHER_IMAGE
+          value: ghcr.io/fission/fetcher:v1.21.0
+        - name: FETCHER_IMAGE_PULL_POLICY
+          value: IfNotPresent
+        - name: BUILDER_IMAGE_PULL_POLICY
+          value: IfNotPresent
+        - name: ENABLE_ISTIO
+          value: 'false'
+        - name: FETCHER_MINCPU
+          value: 10m
+        - name: FETCHER_MINMEM
+          value: 16Mi
+        - name: FETCHER_MAXCPU
+          value: ''
+        - name: FETCHER_MAXMEM
+          value: ''
+        - name: DEBUG_ENV
+          value: 'false'
+        - name: DISABLE_OWNER_REFERENCES
+          value: 'false'
+        - name: PPROF_ENABLED
+          value: 'false'
+        - name: HELM_RELEASE_NAME
+          value: fission
+        - name: FISSION_BUILDER_NAMESPACE
+          value: ''
+        - name: FISSION_FUNCTION_NAMESPACE
+          value: ''
+        - name: FISSION_DEFAULT_NAMESPACE
+          value: fission-function
+        - name: FISSION_RESOURCE_NAMESPACES
+          value: fission-function
+        - name: KUBE_CLIENT_QPS
+          value: '200'
+        - name: KUBE_CLIENT_BURST
+          value: '500'
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: ''
+        - name: OTEL_EXPORTER_OTLP_INSECURE
+          value: 'true'
+        - name: OTEL_TRACES_SAMPLER
+          value: parentbased_traceidratio
+        - name: OTEL_TRACES_SAMPLER_ARG
+          value: '0.1'
+        - name: OTEL_PROPAGATORS
+          value: tracecontext,baggage
+        image: ghcr.io/fission/fission-bundle:v1.21.0
+        imagePullPolicy: IfNotPresent
+        name: buildermgr
+        ports:
+        - containerPort: 8080
+          name: metrics
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      nodeSelector:
+        exec: fission
+      securityContext:
+        fsGroup: 10001
+        runAsGroup: 10001
+        runAsNonRoot: true
+        runAsUser: 10001
+      serviceAccountName: fission-buildermgr
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    chart: fission-all-v1.21.0
+    svc: executor
+  name: executor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      svc: executor
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: '8080'
+        prometheus.io/scrape: 'true'
+      labels:
+        svc: executor
+    spec:
+      containers:
+      - args:
+        - --executorPort
+        - '8888'
+        command:
+        - /fission-bundle
+        env:
+        - name: FETCHER_IMAGE
+          value: ghcr.io/fission/fetcher:v1.21.0
+        - name: FETCHER_IMAGE_PULL_POLICY
+          value: IfNotPresent
+        - name: RUNTIME_IMAGE_PULL_POLICY
+          value: IfNotPresent
+        - name: ADOPT_EXISTING_RESOURCES
+          value: 'false'
+        - name: POD_READY_TIMEOUT
+          value: 300s
+        - name: ENABLE_ISTIO
+          value: 'false'
+        - name: FETCHER_MINCPU
+          value: 10m
+        - name: FETCHER_MINMEM
+          value: 16Mi
+        - name: FETCHER_MAXCPU
+          value: ''
+        - name: FETCHER_MAXMEM
+          value: ''
+        - name: DEBUG_ENV
+          value: 'false'
+        - name: PPROF_ENABLED
+          value: 'false'
+        - name: OBJECT_REAPER_INTERVAL
+          value: '5'
+        - name: SERVICEACCOUNT_CHECK_ENABLED
+          value: 'true'
+        - name: SERVICEACCOUNT_CHECK_INTERVAL
+          value: '0'
+        - name: DISABLE_OWNER_REFERENCES
+          value: 'false'
+        - name: FISSION_BUILDER_NAMESPACE
+          value: ''
+        - name: FISSION_FUNCTION_NAMESPACE
+          value: ''
+        - name: FISSION_DEFAULT_NAMESPACE
+          value: fission-function
+        - name: FISSION_RESOURCE_NAMESPACES
+          value: fission-function
+        - name: KUBE_CLIENT_QPS
+          value: '200'
+        - name: KUBE_CLIENT_BURST
+          value: '500'
+        - name: HELM_RELEASE_NAME
+          value: fission
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: ''
+        - name: OTEL_EXPORTER_OTLP_INSECURE
+          value: 'true'
+        - name: OTEL_TRACES_SAMPLER
+          value: parentbased_traceidratio
+        - name: OTEL_TRACES_SAMPLER_ARG
+          value: '0.1'
+        - name: OTEL_PROPAGATORS
+          value: tracecontext,baggage
+        image: ghcr.io/fission/fission-bundle:v1.21.0
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8888
+          initialDelaySeconds: 35
+          periodSeconds: 5
+        name: executor
+        ports:
+        - containerPort: 8080
+          name: metrics
+        - containerPort: 8888
+          name: http
+        readinessProbe:
+          failureThreshold: 30
+          httpGet:
+            path: /healthz
+            port: 8888
+          initialDelaySeconds: 1
+          periodSeconds: 1
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      nodeSelector:
+        exec: fission
+      securityContext:
+        fsGroup: 10001
+        runAsGroup: 10001
+        runAsNonRoot: true
+        runAsUser: 10001
+      serviceAccountName: fission-executor
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    chart: fission-all-v1.21.0
+    svc: kubewatcher
+  name: kubewatcher
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      svc: kubewatcher
+  template:
+    metadata:
+      labels:
+        svc: kubewatcher
+    spec:
+      containers:
+      - args:
+        - --kubewatcher
+        - --routerUrl
+        - http://router.fission
+        command:
+        - /fission-bundle
+        env:
+        - name: DEBUG_ENV
+          value: 'false'
+        - name: PPROF_ENABLED
+          value: 'false'
+        - name: FISSION_BUILDER_NAMESPACE
+          value: ''
+        - name: FISSION_FUNCTION_NAMESPACE
+          value: ''
+        - name: FISSION_DEFAULT_NAMESPACE
+          value: fission-function
+        - name: FISSION_RESOURCE_NAMESPACES
+          value: fission-function
+        - name: KUBE_CLIENT_QPS
+          value: '200'
+        - name: KUBE_CLIENT_BURST
+          value: '500'
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: ''
+        - name: OTEL_EXPORTER_OTLP_INSECURE
+          value: 'true'
+        - name: OTEL_TRACES_SAMPLER
+          value: parentbased_traceidratio
+        - name: OTEL_TRACES_SAMPLER_ARG
+          value: '0.1'
+        - name: OTEL_PROPAGATORS
+          value: tracecontext,baggage
+        image: ghcr.io/fission/fission-bundle:v1.21.0
+        imagePullPolicy: IfNotPresent
+        name: kubewatcher
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      nodeSelector:
+        exec: fission
+      securityContext:
+        fsGroup: 10001
+        runAsGroup: 10001
+        runAsNonRoot: true
+        runAsUser: 10001
+      serviceAccountName: fission-kubewatcher
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    chart: fission-all-v1.21.0
+    messagequeue: keda
+    svc: mqtrigger-keda
+  name: mqtrigger-keda
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      messagequeue: keda
+      svc: mqtrigger-keda
+  template:
+    metadata:
+      labels:
+        messagequeue: keda
+        svc: mqtrigger-keda
+    spec:
+      containers:
+      - args:
+        - --mqt_keda
+        - --routerUrl
+        - http://router.fission
+        command:
+        - /fission-bundle
+        env:
+        - name: DEBUG_ENV
+          value: 'false'
+        - name: CONNECTOR_IMAGE_PULL_POLICY
+          value: IfNotPresent
+        - name: KAFKA_IMAGE
+          value: ghcr.io/fission/keda-kafka-http-connector:v0.17
+        - name: RABBITMQ_IMAGE
+          value: ghcr.io/fission/keda-rabbitmq-http-connector:v0.15
+        - name: AWS-KINESIS-STREAM_IMAGE
+          value: ghcr.io/fission/keda-aws-kinesis-http-connector:v0.15
+        - name: AWS-SQS-QUEUE_IMAGE
+          value: ghcr.io/fission/keda-aws-sqs-http-connector:v0.16
+        - name: STAN_IMAGE
+          value: ghcr.io/fission/keda-nats-streaming-http-connector:v0.18
+        - name: NATS-JETSTREAM_IMAGE
+          value: ghcr.io/fission/keda-nats-jetstream-http-connector:v0.9
+        - name: GCP-PUBSUB_IMAGE
+          value: ghcr.io/fission/keda-gcp-pubsub-http-connector:v0.11
+        - name: REDIS_IMAGE
+          value: ghcr.io/fission/keda-redis-http-connector:v0.8
+        - name: FISSION_BUILDER_NAMESPACE
+          value: ''
+        - name: FISSION_FUNCTION_NAMESPACE
+          value: ''
+        - name: FISSION_DEFAULT_NAMESPACE
+          value: fission-function
+        - name: FISSION_RESOURCE_NAMESPACES
+          value: fission-function
+        - name: KUBE_CLIENT_QPS
+          value: '200'
+        - name: KUBE_CLIENT_BURST
+          value: '500'
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: ''
+        - name: OTEL_EXPORTER_OTLP_INSECURE
+          value: 'true'
+        - name: OTEL_TRACES_SAMPLER
+          value: parentbased_traceidratio
+        - name: OTEL_TRACES_SAMPLER_ARG
+          value: '0.1'
+        - name: OTEL_PROPAGATORS
+          value: tracecontext,baggage
+        image: ghcr.io/fission/fission-bundle:v1.21.0
+        imagePullPolicy: IfNotPresent
+        name: mqtrigger-keda
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      nodeSelector:
+        exec: fission
+      serviceAccountName: fission-keda
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    application: fission-router
+    chart: fission-all-v1.21.0
+    svc: router
+  name: router
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      application: fission-router
+      svc: router
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: '8080'
+        prometheus.io/scrape: 'true'
+      labels:
+        application: fission-router
+        svc: router
+    spec:
+      containers:
+      - args:
+        - --routerPort
+        - '8888'
+        - --executorUrl
+        - http://executor.fission
+        command:
+        - /fission-bundle
+        env:
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: ROUTER_ROUND_TRIP_TIMEOUT
+          value: 50ms
+        - name: ROUTER_ROUNDTRIP_TIMEOUT_EXPONENT
+          value: '2'
+        - name: ROUTER_ROUND_TRIP_KEEP_ALIVE_TIME
+          value: 30s
+        - name: ROUTER_ROUND_TRIP_DISABLE_KEEP_ALIVE
+          value: 'true'
+        - name: ROUTER_ROUND_TRIP_MAX_RETRIES
+          value: '10'
+        - name: ROUTER_SVC_ADDRESS_MAX_RETRIES
+          value: '5'
+        - name: ROUTER_SVC_ADDRESS_UPDATE_TIMEOUT
+          value: 30s
+        - name: ROUTER_UNTAP_SERVICE_TIMEOUT
+          value: 3600s
+        - name: USE_ENCODED_PATH
+          value: 'false'
+        - name: DEBUG_ENV
+          value: 'false'
+        - name: PPROF_ENABLED
+          value: 'false'
+        - name: DISPLAY_ACCESS_LOG
+          value: 'false'
+        - name: FISSION_BUILDER_NAMESPACE
+          value: ''
+        - name: FISSION_FUNCTION_NAMESPACE
+          value: ''
+        - name: FISSION_DEFAULT_NAMESPACE
+          value: fission-function
+        - name: FISSION_RESOURCE_NAMESPACES
+          value: fission-function
+        - name: KUBE_CLIENT_QPS
+          value: '200'
+        - name: KUBE_CLIENT_BURST
+          value: '500'
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: ''
+        - name: OTEL_EXPORTER_OTLP_INSECURE
+          value: 'true'
+        - name: OTEL_TRACES_SAMPLER
+          value: parentbased_traceidratio
+        - name: OTEL_TRACES_SAMPLER_ARG
+          value: '0.1'
+        - name: OTEL_PROPAGATORS
+          value: tracecontext,baggage
+        image: ghcr.io/fission/fission-bundle:v1.21.0
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          httpGet:
+            path: /router-healthz
+            port: 8888
+          initialDelaySeconds: 35
+          periodSeconds: 5
+        name: router
+        ports:
+        - containerPort: 8080
+          name: metrics
+        - containerPort: 8888
+          name: http
+        readinessProbe:
+          failureThreshold: 30
+          httpGet:
+            path: /router-healthz
+            port: 8888
+          initialDelaySeconds: 1
+          periodSeconds: 1
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etc/config/config.yaml
+          name: config-volume
+          subPath: config.yaml
+      nodeSelector:
+        exec: fission
+      securityContext:
+        fsGroup: 10001
+        runAsGroup: 10001
+        runAsNonRoot: true
+        runAsUser: 10001
+      serviceAccountName: fission-router
+      volumes:
+      - configMap:
+          name: feature-config
+        name: config-volume
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    application: fission-storage
+    chart: fission-all-v1.21.0
+    svc: storagesvc
+  name: storagesvc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      application: fission-storage
+      svc: storagesvc
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: '8080'
+        prometheus.io/scrape: 'true'
+      labels:
+        application: fission-storage
+        svc: storagesvc
+    spec:
+      containers:
+      - args:
+        - --storageServicePort
+        - '8000'
+        - --storageType
+        - local
+        command:
+        - /fission-bundle
+        env:
+        - name: PRUNE_ENABLED
+          value: 'true'
+        - name: PRUNE_INTERVAL
+          value: '60'
+        - name: DEBUG_ENV
+          value: 'false'
+        - name: PPROF_ENABLED
+          value: 'false'
+        - name: FISSION_BUILDER_NAMESPACE
+          value: ''
+        - name: FISSION_FUNCTION_NAMESPACE
+          value: ''
+        - name: FISSION_DEFAULT_NAMESPACE
+          value: fission-function
+        - name: FISSION_RESOURCE_NAMESPACES
+          value: fission-function
+        - name: KUBE_CLIENT_QPS
+          value: '200'
+        - name: KUBE_CLIENT_BURST
+          value: '500'
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: ''
+        - name: OTEL_EXPORTER_OTLP_INSECURE
+          value: 'true'
+        - name: OTEL_TRACES_SAMPLER
+          value: parentbased_traceidratio
+        - name: OTEL_TRACES_SAMPLER_ARG
+          value: '0.1'
+        - name: OTEL_PROPAGATORS
+          value: tracecontext,baggage
+        image: ghcr.io/fission/fission-bundle:v1.21.0
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8000
+          initialDelaySeconds: 35
+          periodSeconds: 5
+        name: storagesvc
+        ports:
+        - containerPort: 8080
+          name: metrics
+        - containerPort: 8000
+          name: http
+        readinessProbe:
+          failureThreshold: 30
+          httpGet:
+            path: /healthz
+            port: 8000
+          initialDelaySeconds: 1
+          periodSeconds: 1
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /fission
+          name: fission-storage
+      nodeSelector:
+        exec: fission
+      securityContext:
+        fsGroup: 10001
+        runAsGroup: 10001
+        runAsNonRoot: true
+        runAsUser: 10001
+      serviceAccountName: fission-storagesvc
+      volumes:
+      - name: fission-storage
+        persistentVolumeClaim:
+          claimName: fission-storage-pvc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    chart: fission-all-v1.21.0
+    svc: timer
+  name: timer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      svc: timer
+  template:
+    metadata:
+      labels:
+        svc: timer
+    spec:
+      containers:
+      - args:
+        - --timer
+        - --routerUrl
+        - http://router.fission
+        command:
+        - /fission-bundle
+        env:
+        - name: DEBUG_ENV
+          value: 'false'
+        - name: PPROF_ENABLED
+          value: 'false'
+        - name: FISSION_BUILDER_NAMESPACE
+          value: ''
+        - name: FISSION_FUNCTION_NAMESPACE
+          value: ''
+        - name: FISSION_DEFAULT_NAMESPACE
+          value: fission-function
+        - name: FISSION_RESOURCE_NAMESPACES
+          value: fission-function
+        - name: KUBE_CLIENT_QPS
+          value: '200'
+        - name: KUBE_CLIENT_BURST
+          value: '500'
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: ''
+        - name: OTEL_EXPORTER_OTLP_INSECURE
+          value: 'true'
+        - name: OTEL_TRACES_SAMPLER
+          value: parentbased_traceidratio
+        - name: OTEL_TRACES_SAMPLER_ARG
+          value: '0.1'
+        - name: OTEL_PROPAGATORS
+          value: tracecontext,baggage
+        image: ghcr.io/fission/fission-bundle:v1.21.0
+        imagePullPolicy: IfNotPresent
+        name: timer
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      nodeSelector:
+        exec: fission
+      securityContext:
+        fsGroup: 10001
+        runAsGroup: 10001
+        runAsNonRoot: true
+        runAsUser: 10001
+      serviceAccountName: fission-timer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    application: fission-webhook
+    chart: fission-all-v1.21.0
+    svc: webhook-service
+  name: webhook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      application: fission-webhook
+      svc: webhook-service
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: '8080'
+        prometheus.io/scrape: 'true'
+      labels:
+        application: fission-webhook
+        svc: webhook-service
+    spec:
+      containers:
+      - args:
+        - --webhookPort
+        - '9443'
+        command:
+        - /fission-bundle
+        image: ghcr.io/fission/fission-bundle:v1.21.0
+        imagePullPolicy: IfNotPresent
+        name: webhook
+        ports:
+        - containerPort: 8080
+          name: metrics
+        resources: {}
+        volumeMounts:
+        - mountPath: /tmp/k8s-webhook-server/serving-certs
+          name: serving-certs
+          readOnly: true
+      nodeSelector:
+        exec: fission
+      securityContext:
+        fsGroup: 10001
+        runAsGroup: 10001
+        runAsNonRoot: true
+        runAsUser: 10001
+      serviceAccountName: fission-webhook
+      volumes:
+      - name: serving-certs
+        secret:
+          secretName: fission-webhook-certs
+---
+null
+...
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  creationTimestamp: null
+  name: fission-mutating-webhooks
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURlakNDQW1LZ0F3SUJBZ0lRRXVJclhLSzBYVGNrQ1JhZUorOVpmekFOQmdrcWhraUc5dzBCQVFzRkFEQVYKTVJNd0VRWURWUVFERXdwbWFYTnphVzl1TFdOaE1CNFhEVEkxTURjek1URTNNVFkwT1ZvWERUTXdNRGN6TURFMwpNVFkwT1Zvd0pqRWtNQ0lHQTFVRUF4TWJkMlZpYUc5dmF5MXpaWEoyYVdObExtWnBjM05wYjI0dWMzWmpNSUlCCklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF2cksrMlhLV3RkZ1NybzhCdjRkdUZTRW0KWnd4Mi9Vdm12UE05cGtiQWxtN0orb1BqbVhNZHlXYXgveDYyOEMzWE10OUJiQVJvdXpKL1RVcFFWNnFBNlgwTgp0dWVBWjhyMnNWVzNhTCtsTEJ5d1JmWWwzYjlLeEtRbm43M3gvdkJ4TGdPM2lhOVVvWUxPZkg5ZEpROEFHU0FCCnBCYk90R2tUcFp3dkVwZ3JGb0FtOE9JWU1EVEZWZ0J5dG9ueDBMQWE1d3pQbWZxUGxwR3hQaERDUDJ3OEZOU0cKMy8yTDFRRWNJQlJ4enNaL09qU1U0enVtbkFlNElQOWMyTS9rQXllbEdZMm0vdjNTeWNBRHNzUjB4YUZtWncyUQpjQmF6aHdvZHlZcUxDWmJzaWF5VGpERGtVb1hRcmJzYUYycExpdjdoQW9VSmcwV3F6MWhwa0RaYVdXQ2dTUUlECkFRQUJvNEcwTUlHeE1BNEdBMVVkRHdFQi93UUVBd0lGb0RBZEJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjREFRWUkKS3dZQkJRVUhBd0l3REFZRFZSMFRBUUgvQkFJd0FEQWZCZ05WSFNNRUdEQVdnQlMzM1Y4MnZud09VSmRQdnA2NgoyMm9wN1Evc3JUQlJCZ05WSFJFRVNqQklnaHQzWldKb2IyOXJMWE5sY25acFkyVXVabWx6YzJsdmJpNXpkbU9DCktYZGxZbWh2YjJzdGMyVnlkbWxqWlM1bWFYTnphVzl1TG5OMll5NWpiSFZ6ZEdWeUxteHZZMkZzTUEwR0NTcUcKU0liM0RRRUJDd1VBQTRJQkFRQVNqL1hzbnNiemZ0RFVQRHJHbDNZZ215emRVa2U1dC92d285bHh1ek9qeUVrcgpiTDVpNW9sTDZjZzFmQ0swdlBxNFJMZ0RYaDRSb1hTdmlwWTQ1a3RsbnhDbGplcHZIRUZtWU1JMy85WWF6b2tlCktPYmlJekM0VE1DeFoxRGx2VUdJaXlCUmNhV1htK2w5UmJ2c0I0bjlnMklGQmYrSEVIbnVrZW5WeDdXWHdBdVgKK3duNnFTUmt5T0l2dVEyRXN4aExQQWtVWWlIT0VEcFpyR3VsR0x0V1o1cGxneU92dWg4bmd4NmwyRzN0Wno1UAprclZaYmo4ODhLOWEvdTRwMTR0YllSdDJlM1pnZmlWQVFlK0VOOXpKK1R4NmM1am5xU2pTTjdlRVp0dlloa0dhClA5aDNkbzkrZFM1S09sdURUdmJjQ045am5ZZzR1RlVnVkJFM1NkbHkKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQ==
+    service:
+      name: webhook-service
+      namespace: fission
+      path: /mutate-fission-io-v1-package
+  failurePolicy: Fail
+  name: mpackage.fission.io
+  rules:
+  - apiGroups:
+    - fission.io
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - packages
+  sideEffects: None
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  creationTimestamp: null
+  name: fission-validating-webhooks
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURlakNDQW1LZ0F3SUJBZ0lRRXVJclhLSzBYVGNrQ1JhZUorOVpmekFOQmdrcWhraUc5dzBCQVFzRkFEQVYKTVJNd0VRWURWUVFERXdwbWFYTnphVzl1TFdOaE1CNFhEVEkxTURjek1URTNNVFkwT1ZvWERUTXdNRGN6TURFMwpNVFkwT1Zvd0pqRWtNQ0lHQTFVRUF4TWJkMlZpYUc5dmF5MXpaWEoyYVdObExtWnBjM05wYjI0dWMzWmpNSUlCCklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF2cksrMlhLV3RkZ1NybzhCdjRkdUZTRW0KWnd4Mi9Vdm12UE05cGtiQWxtN0orb1BqbVhNZHlXYXgveDYyOEMzWE10OUJiQVJvdXpKL1RVcFFWNnFBNlgwTgp0dWVBWjhyMnNWVzNhTCtsTEJ5d1JmWWwzYjlLeEtRbm43M3gvdkJ4TGdPM2lhOVVvWUxPZkg5ZEpROEFHU0FCCnBCYk90R2tUcFp3dkVwZ3JGb0FtOE9JWU1EVEZWZ0J5dG9ueDBMQWE1d3pQbWZxUGxwR3hQaERDUDJ3OEZOU0cKMy8yTDFRRWNJQlJ4enNaL09qU1U0enVtbkFlNElQOWMyTS9rQXllbEdZMm0vdjNTeWNBRHNzUjB4YUZtWncyUQpjQmF6aHdvZHlZcUxDWmJzaWF5VGpERGtVb1hRcmJzYUYycExpdjdoQW9VSmcwV3F6MWhwa0RaYVdXQ2dTUUlECkFRQUJvNEcwTUlHeE1BNEdBMVVkRHdFQi93UUVBd0lGb0RBZEJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjREFRWUkKS3dZQkJRVUhBd0l3REFZRFZSMFRBUUgvQkFJd0FEQWZCZ05WSFNNRUdEQVdnQlMzM1Y4MnZud09VSmRQdnA2NgoyMm9wN1Evc3JUQlJCZ05WSFJFRVNqQklnaHQzWldKb2IyOXJMWE5sY25acFkyVXVabWx6YzJsdmJpNXpkbU9DCktYZGxZbWh2YjJzdGMyVnlkbWxqWlM1bWFYTnphVzl1TG5OMll5NWpiSFZ6ZEdWeUxteHZZMkZzTUEwR0NTcUcKU0liM0RRRUJDd1VBQTRJQkFRQVNqL1hzbnNiemZ0RFVQRHJHbDNZZ215emRVa2U1dC92d285bHh1ek9qeUVrcgpiTDVpNW9sTDZjZzFmQ0swdlBxNFJMZ0RYaDRSb1hTdmlwWTQ1a3RsbnhDbGplcHZIRUZtWU1JMy85WWF6b2tlCktPYmlJekM0VE1DeFoxRGx2VUdJaXlCUmNhV1htK2w5UmJ2c0I0bjlnMklGQmYrSEVIbnVrZW5WeDdXWHdBdVgKK3duNnFTUmt5T0l2dVEyRXN4aExQQWtVWWlIT0VEcFpyR3VsR0x0V1o1cGxneU92dWg4bmd4NmwyRzN0Wno1UAprclZaYmo4ODhLOWEvdTRwMTR0YllSdDJlM1pnZmlWQVFlK0VOOXpKK1R4NmM1am5xU2pTTjdlRVp0dlloa0dhClA5aDNkbzkrZFM1S09sdURUdmJjQ045am5ZZzR1RlVnVkJFM1NkbHkKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQ==
+    service:
+      name: webhook-service
+      namespace: fission
+      path: /validate-fission-io-v1-environment
+  failurePolicy: Fail
+  name: venvironment.fission.io
+  rules:
+  - apiGroups:
+    - fission.io
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    resources:
+    - environments
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURlakNDQW1LZ0F3SUJBZ0lRRXVJclhLSzBYVGNrQ1JhZUorOVpmekFOQmdrcWhraUc5dzBCQVFzRkFEQVYKTVJNd0VRWURWUVFERXdwbWFYTnphVzl1TFdOaE1CNFhEVEkxTURjek1URTNNVFkwT1ZvWERUTXdNRGN6TURFMwpNVFkwT1Zvd0pqRWtNQ0lHQTFVRUF4TWJkMlZpYUc5dmF5MXpaWEoyYVdObExtWnBjM05wYjI0dWMzWmpNSUlCCklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF2cksrMlhLV3RkZ1NybzhCdjRkdUZTRW0KWnd4Mi9Vdm12UE05cGtiQWxtN0orb1BqbVhNZHlXYXgveDYyOEMzWE10OUJiQVJvdXpKL1RVcFFWNnFBNlgwTgp0dWVBWjhyMnNWVzNhTCtsTEJ5d1JmWWwzYjlLeEtRbm43M3gvdkJ4TGdPM2lhOVVvWUxPZkg5ZEpROEFHU0FCCnBCYk90R2tUcFp3dkVwZ3JGb0FtOE9JWU1EVEZWZ0J5dG9ueDBMQWE1d3pQbWZxUGxwR3hQaERDUDJ3OEZOU0cKMy8yTDFRRWNJQlJ4enNaL09qU1U0enVtbkFlNElQOWMyTS9rQXllbEdZMm0vdjNTeWNBRHNzUjB4YUZtWncyUQpjQmF6aHdvZHlZcUxDWmJzaWF5VGpERGtVb1hRcmJzYUYycExpdjdoQW9VSmcwV3F6MWhwa0RaYVdXQ2dTUUlECkFRQUJvNEcwTUlHeE1BNEdBMVVkRHdFQi93UUVBd0lGb0RBZEJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjREFRWUkKS3dZQkJRVUhBd0l3REFZRFZSMFRBUUgvQkFJd0FEQWZCZ05WSFNNRUdEQVdnQlMzM1Y4MnZud09VSmRQdnA2NgoyMm9wN1Evc3JUQlJCZ05WSFJFRVNqQklnaHQzWldKb2IyOXJMWE5sY25acFkyVXVabWx6YzJsdmJpNXpkbU9DCktYZGxZbWh2YjJzdGMyVnlkbWxqWlM1bWFYTnphVzl1TG5OMll5NWpiSFZ6ZEdWeUxteHZZMkZzTUEwR0NTcUcKU0liM0RRRUJDd1VBQTRJQkFRQVNqL1hzbnNiemZ0RFVQRHJHbDNZZ215emRVa2U1dC92d285bHh1ek9qeUVrcgpiTDVpNW9sTDZjZzFmQ0swdlBxNFJMZ0RYaDRSb1hTdmlwWTQ1a3RsbnhDbGplcHZIRUZtWU1JMy85WWF6b2tlCktPYmlJekM0VE1DeFoxRGx2VUdJaXlCUmNhV1htK2w5UmJ2c0I0bjlnMklGQmYrSEVIbnVrZW5WeDdXWHdBdVgKK3duNnFTUmt5T0l2dVEyRXN4aExQQWtVWWlIT0VEcFpyR3VsR0x0V1o1cGxneU92dWg4bmd4NmwyRzN0Wno1UAprclZaYmo4ODhLOWEvdTRwMTR0YllSdDJlM1pnZmlWQVFlK0VOOXpKK1R4NmM1am5xU2pTTjdlRVp0dlloa0dhClA5aDNkbzkrZFM1S09sdURUdmJjQ045am5ZZzR1RlVnVkJFM1NkbHkKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQ==
+    service:
+      name: webhook-service
+      namespace: fission
+      path: /validate-fission-io-v1-function
+  failurePolicy: Fail
+  name: vfunction.fission.io
+  rules:
+  - apiGroups:
+    - fission.io
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - functions
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURlakNDQW1LZ0F3SUJBZ0lRRXVJclhLSzBYVGNrQ1JhZUorOVpmekFOQmdrcWhraUc5dzBCQVFzRkFEQVYKTVJNd0VRWURWUVFERXdwbWFYTnphVzl1TFdOaE1CNFhEVEkxTURjek1URTNNVFkwT1ZvWERUTXdNRGN6TURFMwpNVFkwT1Zvd0pqRWtNQ0lHQTFVRUF4TWJkMlZpYUc5dmF5MXpaWEoyYVdObExtWnBjM05wYjI0dWMzWmpNSUlCCklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF2cksrMlhLV3RkZ1NybzhCdjRkdUZTRW0KWnd4Mi9Vdm12UE05cGtiQWxtN0orb1BqbVhNZHlXYXgveDYyOEMzWE10OUJiQVJvdXpKL1RVcFFWNnFBNlgwTgp0dWVBWjhyMnNWVzNhTCtsTEJ5d1JmWWwzYjlLeEtRbm43M3gvdkJ4TGdPM2lhOVVvWUxPZkg5ZEpROEFHU0FCCnBCYk90R2tUcFp3dkVwZ3JGb0FtOE9JWU1EVEZWZ0J5dG9ueDBMQWE1d3pQbWZxUGxwR3hQaERDUDJ3OEZOU0cKMy8yTDFRRWNJQlJ4enNaL09qU1U0enVtbkFlNElQOWMyTS9rQXllbEdZMm0vdjNTeWNBRHNzUjB4YUZtWncyUQpjQmF6aHdvZHlZcUxDWmJzaWF5VGpERGtVb1hRcmJzYUYycExpdjdoQW9VSmcwV3F6MWhwa0RaYVdXQ2dTUUlECkFRQUJvNEcwTUlHeE1BNEdBMVVkRHdFQi93UUVBd0lGb0RBZEJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjREFRWUkKS3dZQkJRVUhBd0l3REFZRFZSMFRBUUgvQkFJd0FEQWZCZ05WSFNNRUdEQVdnQlMzM1Y4MnZud09VSmRQdnA2NgoyMm9wN1Evc3JUQlJCZ05WSFJFRVNqQklnaHQzWldKb2IyOXJMWE5sY25acFkyVXVabWx6YzJsdmJpNXpkbU9DCktYZGxZbWh2YjJzdGMyVnlkbWxqWlM1bWFYTnphVzl1TG5OMll5NWpiSFZ6ZEdWeUxteHZZMkZzTUEwR0NTcUcKU0liM0RRRUJDd1VBQTRJQkFRQVNqL1hzbnNiemZ0RFVQRHJHbDNZZ215emRVa2U1dC92d285bHh1ek9qeUVrcgpiTDVpNW9sTDZjZzFmQ0swdlBxNFJMZ0RYaDRSb1hTdmlwWTQ1a3RsbnhDbGplcHZIRUZtWU1JMy85WWF6b2tlCktPYmlJekM0VE1DeFoxRGx2VUdJaXlCUmNhV1htK2w5UmJ2c0I0bjlnMklGQmYrSEVIbnVrZW5WeDdXWHdBdVgKK3duNnFTUmt5T0l2dVEyRXN4aExQQWtVWWlIT0VEcFpyR3VsR0x0V1o1cGxneU92dWg4bmd4NmwyRzN0Wno1UAprclZaYmo4ODhLOWEvdTRwMTR0YllSdDJlM1pnZmlWQVFlK0VOOXpKK1R4NmM1am5xU2pTTjdlRVp0dlloa0dhClA5aDNkbzkrZFM1S09sdURUdmJjQ045am5ZZzR1RlVnVkJFM1NkbHkKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQ==
+    service:
+      name: webhook-service
+      namespace: fission
+      path: /validate-fission-io-v1-httptrigger
+  failurePolicy: Fail
+  name: vhttptrigger.fission.io
+  rules:
+  - apiGroups:
+    - fission.io
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - httptriggers
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURlakNDQW1LZ0F3SUJBZ0lRRXVJclhLSzBYVGNrQ1JhZUorOVpmekFOQmdrcWhraUc5dzBCQVFzRkFEQVYKTVJNd0VRWURWUVFERXdwbWFYTnphVzl1TFdOaE1CNFhEVEkxTURjek1URTNNVFkwT1ZvWERUTXdNRGN6TURFMwpNVFkwT1Zvd0pqRWtNQ0lHQTFVRUF4TWJkMlZpYUc5dmF5MXpaWEoyYVdObExtWnBjM05wYjI0dWMzWmpNSUlCCklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF2cksrMlhLV3RkZ1NybzhCdjRkdUZTRW0KWnd4Mi9Vdm12UE05cGtiQWxtN0orb1BqbVhNZHlXYXgveDYyOEMzWE10OUJiQVJvdXpKL1RVcFFWNnFBNlgwTgp0dWVBWjhyMnNWVzNhTCtsTEJ5d1JmWWwzYjlLeEtRbm43M3gvdkJ4TGdPM2lhOVVvWUxPZkg5ZEpROEFHU0FCCnBCYk90R2tUcFp3dkVwZ3JGb0FtOE9JWU1EVEZWZ0J5dG9ueDBMQWE1d3pQbWZxUGxwR3hQaERDUDJ3OEZOU0cKMy8yTDFRRWNJQlJ4enNaL09qU1U0enVtbkFlNElQOWMyTS9rQXllbEdZMm0vdjNTeWNBRHNzUjB4YUZtWncyUQpjQmF6aHdvZHlZcUxDWmJzaWF5VGpERGtVb1hRcmJzYUYycExpdjdoQW9VSmcwV3F6MWhwa0RaYVdXQ2dTUUlECkFRQUJvNEcwTUlHeE1BNEdBMVVkRHdFQi93UUVBd0lGb0RBZEJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjREFRWUkKS3dZQkJRVUhBd0l3REFZRFZSMFRBUUgvQkFJd0FEQWZCZ05WSFNNRUdEQVdnQlMzM1Y4MnZud09VSmRQdnA2NgoyMm9wN1Evc3JUQlJCZ05WSFJFRVNqQklnaHQzWldKb2IyOXJMWE5sY25acFkyVXVabWx6YzJsdmJpNXpkbU9DCktYZGxZbWh2YjJzdGMyVnlkbWxqWlM1bWFYTnphVzl1TG5OMll5NWpiSFZ6ZEdWeUxteHZZMkZzTUEwR0NTcUcKU0liM0RRRUJDd1VBQTRJQkFRQVNqL1hzbnNiemZ0RFVQRHJHbDNZZ215emRVa2U1dC92d285bHh1ek9qeUVrcgpiTDVpNW9sTDZjZzFmQ0swdlBxNFJMZ0RYaDRSb1hTdmlwWTQ1a3RsbnhDbGplcHZIRUZtWU1JMy85WWF6b2tlCktPYmlJekM0VE1DeFoxRGx2VUdJaXlCUmNhV1htK2w5UmJ2c0I0bjlnMklGQmYrSEVIbnVrZW5WeDdXWHdBdVgKK3duNnFTUmt5T0l2dVEyRXN4aExQQWtVWWlIT0VEcFpyR3VsR0x0V1o1cGxneU92dWg4bmd4NmwyRzN0Wno1UAprclZaYmo4ODhLOWEvdTRwMTR0YllSdDJlM1pnZmlWQVFlK0VOOXpKK1R4NmM1am5xU2pTTjdlRVp0dlloa0dhClA5aDNkbzkrZFM1S09sdURUdmJjQ045am5ZZzR1RlVnVkJFM1NkbHkKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQ==
+    service:
+      name: webhook-service
+      namespace: fission
+      path: /validate-fission-io-v1-kuberneteswatchtrigger
+  failurePolicy: Fail
+  name: vkuberneteswatchtrigger.fission.io
+  rules:
+  - apiGroups:
+    - fission.io
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - kuberneteswatchtriggers
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURlakNDQW1LZ0F3SUJBZ0lRRXVJclhLSzBYVGNrQ1JhZUorOVpmekFOQmdrcWhraUc5dzBCQVFzRkFEQVYKTVJNd0VRWURWUVFERXdwbWFYTnphVzl1TFdOaE1CNFhEVEkxTURjek1URTNNVFkwT1ZvWERUTXdNRGN6TURFMwpNVFkwT1Zvd0pqRWtNQ0lHQTFVRUF4TWJkMlZpYUc5dmF5MXpaWEoyYVdObExtWnBjM05wYjI0dWMzWmpNSUlCCklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF2cksrMlhLV3RkZ1NybzhCdjRkdUZTRW0KWnd4Mi9Vdm12UE05cGtiQWxtN0orb1BqbVhNZHlXYXgveDYyOEMzWE10OUJiQVJvdXpKL1RVcFFWNnFBNlgwTgp0dWVBWjhyMnNWVzNhTCtsTEJ5d1JmWWwzYjlLeEtRbm43M3gvdkJ4TGdPM2lhOVVvWUxPZkg5ZEpROEFHU0FCCnBCYk90R2tUcFp3dkVwZ3JGb0FtOE9JWU1EVEZWZ0J5dG9ueDBMQWE1d3pQbWZxUGxwR3hQaERDUDJ3OEZOU0cKMy8yTDFRRWNJQlJ4enNaL09qU1U0enVtbkFlNElQOWMyTS9rQXllbEdZMm0vdjNTeWNBRHNzUjB4YUZtWncyUQpjQmF6aHdvZHlZcUxDWmJzaWF5VGpERGtVb1hRcmJzYUYycExpdjdoQW9VSmcwV3F6MWhwa0RaYVdXQ2dTUUlECkFRQUJvNEcwTUlHeE1BNEdBMVVkRHdFQi93UUVBd0lGb0RBZEJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjREFRWUkKS3dZQkJRVUhBd0l3REFZRFZSMFRBUUgvQkFJd0FEQWZCZ05WSFNNRUdEQVdnQlMzM1Y4MnZud09VSmRQdnA2NgoyMm9wN1Evc3JUQlJCZ05WSFJFRVNqQklnaHQzWldKb2IyOXJMWE5sY25acFkyVXVabWx6YzJsdmJpNXpkbU9DCktYZGxZbWh2YjJzdGMyVnlkbWxqWlM1bWFYTnphVzl1TG5OMll5NWpiSFZ6ZEdWeUxteHZZMkZzTUEwR0NTcUcKU0liM0RRRUJDd1VBQTRJQkFRQVNqL1hzbnNiemZ0RFVQRHJHbDNZZ215emRVa2U1dC92d285bHh1ek9qeUVrcgpiTDVpNW9sTDZjZzFmQ0swdlBxNFJMZ0RYaDRSb1hTdmlwWTQ1a3RsbnhDbGplcHZIRUZtWU1JMy85WWF6b2tlCktPYmlJekM0VE1DeFoxRGx2VUdJaXlCUmNhV1htK2w5UmJ2c0I0bjlnMklGQmYrSEVIbnVrZW5WeDdXWHdBdVgKK3duNnFTUmt5T0l2dVEyRXN4aExQQWtVWWlIT0VEcFpyR3VsR0x0V1o1cGxneU92dWg4bmd4NmwyRzN0Wno1UAprclZaYmo4ODhLOWEvdTRwMTR0YllSdDJlM1pnZmlWQVFlK0VOOXpKK1R4NmM1am5xU2pTTjdlRVp0dlloa0dhClA5aDNkbzkrZFM1S09sdURUdmJjQ045am5ZZzR1RlVnVkJFM1NkbHkKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQ==
+    service:
+      name: webhook-service
+      namespace: fission
+      path: /validate-fission-io-v1-messagequeuetrigger
+  failurePolicy: Fail
+  name: vmessagequeuetrigger.fission.io
+  rules:
+  - apiGroups:
+    - fission.io
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - messagequeuetriggers
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURlakNDQW1LZ0F3SUJBZ0lRRXVJclhLSzBYVGNrQ1JhZUorOVpmekFOQmdrcWhraUc5dzBCQVFzRkFEQVYKTVJNd0VRWURWUVFERXdwbWFYTnphVzl1TFdOaE1CNFhEVEkxTURjek1URTNNVFkwT1ZvWERUTXdNRGN6TURFMwpNVFkwT1Zvd0pqRWtNQ0lHQTFVRUF4TWJkMlZpYUc5dmF5MXpaWEoyYVdObExtWnBjM05wYjI0dWMzWmpNSUlCCklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF2cksrMlhLV3RkZ1NybzhCdjRkdUZTRW0KWnd4Mi9Vdm12UE05cGtiQWxtN0orb1BqbVhNZHlXYXgveDYyOEMzWE10OUJiQVJvdXpKL1RVcFFWNnFBNlgwTgp0dWVBWjhyMnNWVzNhTCtsTEJ5d1JmWWwzYjlLeEtRbm43M3gvdkJ4TGdPM2lhOVVvWUxPZkg5ZEpROEFHU0FCCnBCYk90R2tUcFp3dkVwZ3JGb0FtOE9JWU1EVEZWZ0J5dG9ueDBMQWE1d3pQbWZxUGxwR3hQaERDUDJ3OEZOU0cKMy8yTDFRRWNJQlJ4enNaL09qU1U0enVtbkFlNElQOWMyTS9rQXllbEdZMm0vdjNTeWNBRHNzUjB4YUZtWncyUQpjQmF6aHdvZHlZcUxDWmJzaWF5VGpERGtVb1hRcmJzYUYycExpdjdoQW9VSmcwV3F6MWhwa0RaYVdXQ2dTUUlECkFRQUJvNEcwTUlHeE1BNEdBMVVkRHdFQi93UUVBd0lGb0RBZEJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjREFRWUkKS3dZQkJRVUhBd0l3REFZRFZSMFRBUUgvQkFJd0FEQWZCZ05WSFNNRUdEQVdnQlMzM1Y4MnZud09VSmRQdnA2NgoyMm9wN1Evc3JUQlJCZ05WSFJFRVNqQklnaHQzWldKb2IyOXJMWE5sY25acFkyVXVabWx6YzJsdmJpNXpkbU9DCktYZGxZbWh2YjJzdGMyVnlkbWxqWlM1bWFYTnphVzl1TG5OMll5NWpiSFZ6ZEdWeUxteHZZMkZzTUEwR0NTcUcKU0liM0RRRUJDd1VBQTRJQkFRQVNqL1hzbnNiemZ0RFVQRHJHbDNZZ215emRVa2U1dC92d285bHh1ek9qeUVrcgpiTDVpNW9sTDZjZzFmQ0swdlBxNFJMZ0RYaDRSb1hTdmlwWTQ1a3RsbnhDbGplcHZIRUZtWU1JMy85WWF6b2tlCktPYmlJekM0VE1DeFoxRGx2VUdJaXlCUmNhV1htK2w5UmJ2c0I0bjlnMklGQmYrSEVIbnVrZW5WeDdXWHdBdVgKK3duNnFTUmt5T0l2dVEyRXN4aExQQWtVWWlIT0VEcFpyR3VsR0x0V1o1cGxneU92dWg4bmd4NmwyRzN0Wno1UAprclZaYmo4ODhLOWEvdTRwMTR0YllSdDJlM1pnZmlWQVFlK0VOOXpKK1R4NmM1am5xU2pTTjdlRVp0dlloa0dhClA5aDNkbzkrZFM1S09sdURUdmJjQ045am5ZZzR1RlVnVkJFM1NkbHkKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQ==
+    service:
+      name: webhook-service
+      namespace: fission
+      path: /validate-fission-io-v1-package
+  failurePolicy: Fail
+  name: vpackage.fission.io
+  rules:
+  - apiGroups:
+    - fission.io
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - packages
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURlakNDQW1LZ0F3SUJBZ0lRRXVJclhLSzBYVGNrQ1JhZUorOVpmekFOQmdrcWhraUc5dzBCQVFzRkFEQVYKTVJNd0VRWURWUVFERXdwbWFYTnphVzl1TFdOaE1CNFhEVEkxTURjek1URTNNVFkwT1ZvWERUTXdNRGN6TURFMwpNVFkwT1Zvd0pqRWtNQ0lHQTFVRUF4TWJkMlZpYUc5dmF5MXpaWEoyYVdObExtWnBjM05wYjI0dWMzWmpNSUlCCklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF2cksrMlhLV3RkZ1NybzhCdjRkdUZTRW0KWnd4Mi9Vdm12UE05cGtiQWxtN0orb1BqbVhNZHlXYXgveDYyOEMzWE10OUJiQVJvdXpKL1RVcFFWNnFBNlgwTgp0dWVBWjhyMnNWVzNhTCtsTEJ5d1JmWWwzYjlLeEtRbm43M3gvdkJ4TGdPM2lhOVVvWUxPZkg5ZEpROEFHU0FCCnBCYk90R2tUcFp3dkVwZ3JGb0FtOE9JWU1EVEZWZ0J5dG9ueDBMQWE1d3pQbWZxUGxwR3hQaERDUDJ3OEZOU0cKMy8yTDFRRWNJQlJ4enNaL09qU1U0enVtbkFlNElQOWMyTS9rQXllbEdZMm0vdjNTeWNBRHNzUjB4YUZtWncyUQpjQmF6aHdvZHlZcUxDWmJzaWF5VGpERGtVb1hRcmJzYUYycExpdjdoQW9VSmcwV3F6MWhwa0RaYVdXQ2dTUUlECkFRQUJvNEcwTUlHeE1BNEdBMVVkRHdFQi93UUVBd0lGb0RBZEJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjREFRWUkKS3dZQkJRVUhBd0l3REFZRFZSMFRBUUgvQkFJd0FEQWZCZ05WSFNNRUdEQVdnQlMzM1Y4MnZud09VSmRQdnA2NgoyMm9wN1Evc3JUQlJCZ05WSFJFRVNqQklnaHQzWldKb2IyOXJMWE5sY25acFkyVXVabWx6YzJsdmJpNXpkbU9DCktYZGxZbWh2YjJzdGMyVnlkbWxqWlM1bWFYTnphVzl1TG5OMll5NWpiSFZ6ZEdWeUxteHZZMkZzTUEwR0NTcUcKU0liM0RRRUJDd1VBQTRJQkFRQVNqL1hzbnNiemZ0RFVQRHJHbDNZZ215emRVa2U1dC92d285bHh1ek9qeUVrcgpiTDVpNW9sTDZjZzFmQ0swdlBxNFJMZ0RYaDRSb1hTdmlwWTQ1a3RsbnhDbGplcHZIRUZtWU1JMy85WWF6b2tlCktPYmlJekM0VE1DeFoxRGx2VUdJaXlCUmNhV1htK2w5UmJ2c0I0bjlnMklGQmYrSEVIbnVrZW5WeDdXWHdBdVgKK3duNnFTUmt5T0l2dVEyRXN4aExQQWtVWWlIT0VEcFpyR3VsR0x0V1o1cGxneU92dWg4bmd4NmwyRzN0Wno1UAprclZaYmo4ODhLOWEvdTRwMTR0YllSdDJlM1pnZmlWQVFlK0VOOXpKK1R4NmM1am5xU2pTTjdlRVp0dlloa0dhClA5aDNkbzkrZFM1S09sdURUdmJjQ045am5ZZzR1RlVnVkJFM1NkbHkKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQ==
+    service:
+      name: webhook-service
+      namespace: fission
+      path: /validate-fission-io-v1-timetrigger
+  failurePolicy: Fail
+  name: vtimetrigger.fission.io
+  rules:
+  - apiGroups:
+    - fission.io
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - timetriggers
+  sideEffects: None
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    helm.sh/hook: pre-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation
+    helm.sh/hook-weight: '-1'
+  name: fission-preupgrade
+  namespace: fission
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations:
+    helm.sh/hook: pre-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation
+    helm.sh/hook-weight: '-2'
+  name: fission-preupgrade
+rules:
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  annotations:
+    helm.sh/hook: pre-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation
+  name: fission-preupgrade
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: fission-preupgrade
+subjects:
+- kind: ServiceAccount
+  name: fission-preupgrade
+  namespace: fission
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  annotations:
+    helm.sh/hook: pre-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation
+    helm.sh/hook-weight: '-2'
+  name: fission-preupgrade-fission-cr
+  namespace: fission-function
+rules:
+- apiGroups:
+  - fission.io
+  resources:
+  - canaryconfigs
+  - environments
+  - functions
+  - httptriggers
+  - kuberneteswatchtriggers
+  - messagequeuetriggers
+  - packages
+  - timetriggers
+  verbs:
+  - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  annotations:
+    helm.sh/hook: pre-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation
+  name: fission-preupgrade-fission-cr
+  namespace: fission-function
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: fission-preupgrade-fission-cr
+subjects:
+- kind: ServiceAccount
+  name: fission-preupgrade
+  namespace: fission
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  annotations:
+    helm.sh/hook: post-install
+    helm.sh/hook-delete-policy: hook-succeeded
+  labels:
+    app: fission-all
+    chart: fission-all-v1.21.0
+    release: fission
+  name: fission-fission-all-v1.21.0-post-install
+spec:
+  template:
+    metadata:
+      annotations: null
+      labels:
+        app: fission-all
+        release: fission
+      name: fission-fission-all
+    spec:
+      containers:
+      - args:
+        - event
+        - -c
+        - fission-use
+        - -a
+        - helm-post-install
+        - -l
+        - fission-all-v1.21.0
+        command:
+        - /reporter
+        env:
+        - name: GA_TRACKING_ID
+          value: UA-196546703-1
+        image: ghcr.io/fission/reporter:v1.21.0
+        imagePullPolicy: IfNotPresent
+        name: post-install-job
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      nodeSelector:
+        exec: fission
+      restartPolicy: Never
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  annotations:
+    helm.sh/hook: post-upgrade
+    helm.sh/hook-delete-policy: hook-succeeded
+  labels:
+    app: fission-all
+    chart: fission-all-v1.21.0
+    release: fission
+  name: fission-fission-all-v1.21.0-post-upgrade
+spec:
+  template:
+    metadata:
+      annotations: null
+      labels:
+        app: fission-all
+        release: fission
+      name: fission-fission-all
+    spec:
+      containers:
+      - args:
+        - event
+        - -c
+        - fission-use
+        - -a
+        - helm-post-upgrade
+        - -l
+        - fission-all-v1.21.0
+        command:
+        - /reporter
+        env:
+        - name: GA_TRACKING_ID
+          value: UA-196546703-1
+        image: ghcr.io/fission/reporter:v1.21.0
+        imagePullPolicy: IfNotPresent
+        name: post-upgrade-job
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      nodeSelector:
+        exec: fission
+      restartPolicy: Never
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  annotations:
+    helm.sh/hook: pre-upgrade
+    helm.sh/hook-delete-policy: hook-succeeded
+    helm.sh/hook-weight: '1'
+  labels:
+    app: fission-all
+    chart: fission-all-v1.21.0
+    release: fission
+  name: fission-fission-all-v1.21.0-219
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        app: fission-all
+        release: fission
+      name: fission-fission-all
+    spec:
+      containers:
+      - command:
+        - /pre-upgrade-checks
+        env:
+        - name: FISSION_BUILDER_NAMESPACE
+          value: ''
+        - name: FISSION_FUNCTION_NAMESPACE
+          value: ''
+        - name: FISSION_DEFAULT_NAMESPACE
+          value: fission-function
+        - name: FISSION_RESOURCE_NAMESPACES
+          value: fission-function
+        - name: KUBE_CLIENT_QPS
+          value: '200'
+        - name: KUBE_CLIENT_BURST
+          value: '500'
+        image: ghcr.io/fission/pre-upgrade-checks:v1.21.0
+        imagePullPolicy: IfNotPresent
+        name: pre-upgrade-job
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      nodeSelector:
+        exec: fission
+      restartPolicy: Never
+      serviceAccountName: fission-preupgrade

@@ -1,0 +1,26 @@
+{
+    "machine1": {
+        "ssh_str": "username@yourhost.1.com",
+        "ip": "1.2.3.4"
+    },
+    "machine2": {
+        "ssh_str": "username@yourhost.2.com",
+        "ip": "1.2.3.5"
+    },
+    "machine3": {
+        "ssh_str": "username@yourhost.3.com",
+        "ip": "1.2.3.6"
+    },
+    "machine4" : {
+        "ssh_str": "username@yourhost.4.com",
+        "ip": "1.2.3.7"
+    },
+    "machine5" : {
+        "ssh_str": "username@yourhost.5.com",
+        "ip": "1.2.3.8"
+    },
+    "machine6" : {
+        "ssh_str": "username@yourhost.6.com",
+        "ip": "1.2.3.9"
+    }
+}

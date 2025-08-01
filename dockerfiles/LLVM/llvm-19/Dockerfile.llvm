@@ -1,0 +1,64 @@
+FROM ubuntu:bionic as builder
+
+#Install packages and add non-root user
+RUN apt-get update\
+    && apt-get install -y build-essential \
+    && apt-get install -y curl ca-certificates pkg-config wget git software-properties-common python3.8 \
+    && addgroup --system app && adduser -system app
+
+RUN wget https://github.com/Kitware/CMake/releases/download/v3.29.3/cmake-3.29.3-linux-x86_64.tar.gz \
+    && tar -vxf cmake-3.29.3-linux-x86_64.tar.gz \
+    && mv cmake-3.29.3-linux-x86_64 cmake-3.29  
+
+RUN wget https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-19.1.0.tar.gz \
+    && tar -vxf llvmorg-19.1.0.tar.gz \
+    && mv llvm-project-llvmorg-19.1.0 llvm-project
+
+RUN git clone https://github.com/zyuxuan0115/quilt.git \
+    && cp /quilt/merge_func/merge-rust-async/llvm_pass/MergeRustFuncAsync.h   /llvm-project/llvm/include/llvm/Transforms/Utils/ \
+    && cp /quilt/merge_func/merge-rust-async/llvm_pass/MergeRustFuncAsync.cpp /llvm-project/llvm/lib/Transforms/Utils/ \
+    && cp /quilt/merge_func/merge-rust-async/llvm_pass/RemoveRedundant.h   /llvm-project/llvm/include/llvm/Transforms/Utils/ \
+    && cp /quilt/merge_func/merge-rust-async/llvm_pass/RemoveRedundant.cpp /llvm-project/llvm/lib/Transforms/Utils/ \
+    && cp /quilt/merge_func/merge-rust-func/llvm-pass/MergeRustFunc.h   /llvm-project/llvm/include/llvm/Transforms/Utils/ \
+    && cp /quilt/merge_func/merge-rust-func/llvm-pass/MergeRustFunc.cpp /llvm-project/llvm/lib/Transforms/Utils/ \
+    && cp /quilt/merge_func/CMakeLists.txt    /llvm-project/llvm/lib/Transforms/Utils/ \
+    && cp /quilt/merge_func/PassBuilder.cpp   /llvm-project/llvm/lib/Passes/ \
+    && cp /quilt/merge_func/PassRegistry.def  /llvm-project/llvm/lib/Passes/
+
+RUN cd /llvm-project \
+    && mkdir build && cd build \
+    && /cmake-3.29/bin/cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_PROJECTS="clang;compiler-rt" ../llvm \
+    && make -j4
+
+RUN cd /llvm-project/build \
+    && rm -rf docs emamples cmake benchmarks test tnittests projects third-party
+
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y
+RUN cd /quilt/merge_func/merge-rust-async/demangle_rust_funcname \
+    && cargo build --release 
+
+FROM ubuntu:focal as final
+
+RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get update -y \
+  && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y build-essential curl zlib1g-dev python3 git \
+  && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y ca-certificates pkg-config libssl-dev libcurl4-openssl-dev \
+  && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC addgroup --system app && adduser -system app
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y
+
+COPY --from=builder /llvm-project/build /llvm
+COPY --from=builder /quilt/merge_func/merge-rust-async/demangle_rust_funcname/target/release/demangle_rust_funcname /llvm
+
+ENV CARGO_TARGET_DIR=/home/rust/target
+ENV PATH="/root/.cargo/bin:${PATH}"
+RUN rustup toolchain install nightly
+RUN rustup default 1.78
+RUN rustup default nightly
+RUN rustup install nightly-2024-12-19
+RUN rustup default nightly-2024-12-19
+RUN rustup component add rust-src --toolchain nightly-2024-12-19-x86_64-unknown-linux-gnu
+ENV PATH="/llvm/bin:${PATH}"
+
+WORKDIR /llvm

@@ -1,0 +1,60 @@
+#!/usr/bin/python3
+
+import os
+import sys
+import time
+import json
+import yaml
+import random
+import string
+import argparse
+import subprocess as sp
+
+def random_string(length):
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for _ in range(length))
+
+def run_remote_command(ssh_str, cmd):
+    ret = sp.run(['ssh', '-q', ssh_str, '--'] + cmd,
+                 stdout=sp.PIPE, stderr=sp.PIPE, encoding='utf8')
+    if ret.returncode != 0:
+        raise Exception('Failed to run remote command: ' + ' '.join(cmd) + '\n' + ret.stderr)
+    return ret.stdout, ret.stderr
+
+def run_remote_command_without_exception(ssh_str, cmd):
+    sp.run(['ssh', '-q', ssh_str, '--'] + cmd,
+                 stdout=sp.PIPE, stderr=sp.PIPE, encoding='utf8')
+
+def setup_hostname_for_machines(machine_infos):
+    for name, machine_info in machine_infos.items():
+        run_remote_command(machine_info['ssh_str'], ['sudo', 'hostnamectl', 'set-hostname', name])
+
+def get_host_main(base_dir, machine_name):
+    if not os.path.exists(os.path.join(base_dir, 'machines.json')):
+        raise Exception('Machines not started')
+    with open(os.path.join(base_dir, 'machines.json')) as fin:
+        machine_infos = json.load(fin)
+    print(machine_infos[machine_name]['ssh_str'])
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('cmd', type=str)
+    parser.add_argument('--base-dir', type=str, default='.')
+    parser.add_argument('--machine-name', type=str, default=None)
+    parser.add_argument('--machine-label', type=str, default=None)
+    parser.add_argument('--service', type=str, default=None)
+    parser.add_argument('--use-spot-instances', action='store_true')
+    parser.add_argument('--spot-instances-waiting-time', type=int, default=3)
+    parser.add_argument('--log-path', type=str, default=None)
+    args = parser.parse_args()
+    try:
+        if args.cmd == 'get-host':
+            get_host_main(args.base_dir, args.machine_name)
+        else:
+            raise Exception('Unknown command: ' + args.cmd)
+    except Exception as e:
+        err_str = str(e)
+        if not err_str.endswith('\n'):
+            err_str += '\n'
+        sys.stderr.write(err_str)
+        sys.exit(1)

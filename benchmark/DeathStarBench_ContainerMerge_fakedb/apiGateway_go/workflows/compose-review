@@ -1,0 +1,15 @@
+compose-review
+unique-id-service
+text-service
+upload-user-with-username
+upload-movie-id
+compose-review-upload-unique-id
+compose-review-upload-text
+compose-review-upload-user-id
+compose-review-upload-movie-id
+rating-service
+compose-review-upload-rating
+compose-and-upload
+store-review
+upload-user-review
+upload-movie-review

@@ -1,0 +1,5 @@
+setup/serverless_runtime/bootstrap.sh
+setup/serverless_runtime/fission/fission-webhook/certs/tls.crt
+setup/serverless_runtime/fission/fission-webhook/certs/tls.key
+setup/serverless_runtime/grafana_tempo/grafana_password.txt
+setup/serverless_runtime/kubeconfig

@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fission-webhook
+  namespace: fission-function
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fission-webhook
+  template:
+    metadata:
+      labels:
+        app: fission-webhook
+    spec:
+      containers:
+        - name: fission-webhook
+          image: zyuxuan0115/fission-func-webhook:latest
+          ports:
+            - containerPort: 443
+          volumeMounts:
+            - name: certs
+              mountPath: /certs
+              readOnly: true
+      volumes:
+        - name: certs
+          secret:
+            secretName: fission-webhook-tls
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fission-webhook
+  namespace: fission-function
+spec:
+  ports:
+    - port: 443
+      targetPort: 443
+  selector:
+    app: fission-webhook

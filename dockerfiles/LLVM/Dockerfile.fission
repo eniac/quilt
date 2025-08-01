@@ -1,0 +1,19 @@
+ARG USERNAME
+FROM ${USERNAME}/llvm-19:latest as builder
+
+# Copy all the sources
+WORKDIR /home/rust
+COPY . .
+
+# build function.o
+RUN chmod 777 merge_tree.py
+RUN ./merge_tree.py compile funcTree
+RUN ./merge_tree.py merge funcTree
+RUN ./merge_tree.py link funcTree
+RUN objcopy --add-section .metadata=/home/rust/metadata.txt /home/rust/function /home/rust/function_new
+
+FROM ${USERNAME}/fission-env:latest as final
+
+COPY --from=builder /home/rust/function_new /bin/userfunc
+COPY --from=builder /usr/bin/readelf /usr/bin/readelf
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libctf-nobfd.so.0 /usr/lib/x86_64-linux-gnu/libctf-nobfd.so.0

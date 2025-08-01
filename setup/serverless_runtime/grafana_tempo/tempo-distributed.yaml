@@ -1,0 +1,1364 @@
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    app.kubernetes.io/component: ingester
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/part-of: memberlist
+    app.kubernetes.io/version: 2.6.0
+    helm.sh/chart: tempo-distributed-1.23.0
+  name: tempo-ingester
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: ingester
+      app.kubernetes.io/instance: tempo
+      app.kubernetes.io/name: tempo
+---
+apiVersion: v1
+automountServiceAccountToken: false
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/version: 2.6.0
+    helm.sh/chart: tempo-distributed-1.23.0
+  name: tempo
+  namespace: sn-tempo
+---
+apiVersion: v1
+data:
+  overrides.yaml: "\noverrides:\n  {}\n"
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/version: 2.6.0
+    helm.sh/chart: tempo-distributed-1.23.0
+  name: tempo-runtime
+  namespace: sn-tempo
+---
+apiVersion: v1
+data:
+  tempo-query.yaml: 'backend: 127.0.0.1:3100
+
+    '
+  tempo.yaml: "\ncache:\n  caches:\n  - memcached:\n      consistent_hash: true\n\
+    \      host: 'tempo-memcached'\n      service: memcached-client\n      timeout:\
+    \ 500ms\n    roles:\n    - parquet-footer\n    - bloom\n    - frontend-search\n\
+    compactor:\n  compaction:\n    block_retention: 48h\n    compacted_block_retention:\
+    \ 1h\n    compaction_cycle: 30s\n    compaction_window: 1h\n    max_block_bytes:\
+    \ 107374182400\n    max_compaction_objects: 6000000\n    max_time_per_tenant:\
+    \ 5m\n    retention_concurrency: 10\n    v2_in_buffer_bytes: 5242880\n    v2_out_buffer_bytes:\
+    \ 20971520\n    v2_prefetch_traces_count: 1000\n  ring:\n    kvstore:\n      store:\
+    \ memberlist\ndistributor:\n  receivers:\n    otlp:\n      protocols:\n      \
+    \  grpc: null\n        http: null\n  ring:\n    kvstore:\n      store: memberlist\n\
+    ingester:\n  complete_block_timeout: 180s\n  lifecycler:\n    ring:\n      kvstore:\n\
+    \        store: memberlist\n      replication_factor: 3\n      zone_awareness_enabled:\
+    \ true\n    tokens_file_path: /var/tempo/tokens.json\n  max_block_duration: 180s\n\
+    memberlist:\n  abort_if_cluster_join_fails: false\n  bind_addr: []\n  bind_port:\
+    \ 7946\n  cluster_label: 'tempo.sn-tempo'\n  gossip_interval: 1s\n  gossip_nodes:\
+    \ 2\n  gossip_to_dead_nodes_time: 30s\n  join_members:\n  - dns+tempo-gossip-ring:7946\n\
+    \  leave_timeout: 5s\n  left_ingesters_timeout: 5m\n  max_join_backoff: 1m\n \
+    \ max_join_retries: 10\n  min_join_backoff: 1s\n  node_name: \"\"\n  packet_dial_timeout:\
+    \ 5s\n  packet_write_timeout: 5s\n  pull_push_interval: 30s\n  randomize_node_name:\
+    \ true\n  rejoin_interval: 0s\n  retransmit_factor: 2\n  stream_timeout: 10s\n\
+    multitenancy_enabled: false\noverrides:\n  per_tenant_override_config: /runtime-config/overrides.yaml\n\
+    querier:\n  frontend_worker:\n    frontend_address: tempo-query-frontend-discovery:9095\n\
+    \  max_concurrent_queries: 20\n  search:\n    external_backend: null\n    external_endpoints:\
+    \ []\n    external_hedge_requests_at: 8s\n    external_hedge_requests_up_to: 2\n\
+    \    prefer_self: 10\n    query_timeout: 30s\n  trace_by_id:\n    query_timeout:\
+    \ 10s\nquery_frontend:\n  max_outstanding_per_tenant: 2000\n  max_retries: 2\n\
+    \  metrics:\n    concurrent_jobs: 1000\n    duration_slo: 0s\n    interval: 5m\n\
+    \    max_duration: 3h\n    query_backend_after: 30m\n    target_bytes_per_job:\
+    \ 104857600\n    throughput_bytes_slo: 0\n  search:\n    concurrent_jobs: 1000\n\
+    \    default_result_limit: 200000\n    target_bytes_per_job: 104857600\n  trace_by_id:\n\
+    \    query_shards: 50\nserver:\n  grpc_server_max_recv_msg_size: 4194304\n  grpc_server_max_send_msg_size:\
+    \ 4194304\n  http_listen_port: 3100\n  http_server_read_timeout: 30s\n  http_server_write_timeout:\
+    \ 30s\n  log_format: logfmt\n  log_level: info\nstorage:\n  trace:\n    backend:\
+    \ local\n    blocklist_poll: 5m\n    local:\n      path: /var/tempo/traces\n \
+    \   pool:\n      max_workers: 400\n      queue_depth: 20000\n    wal:\n      path:\
+    \ /var/tempo/wal\nusage_report:\n  reporting_enabled: true\n"
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/version: 2.6.0
+    helm.sh/chart: tempo-distributed-1.23.0
+  name: tempo-config
+  namespace: sn-tempo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: compactor
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/version: 2.6.0
+    helm.sh/chart: tempo-distributed-1.23.0
+  name: tempo-compactor
+spec:
+  ports:
+  - name: http-metrics
+    port: 3100
+    protocol: TCP
+    targetPort: 3100
+  selector:
+    app.kubernetes.io/component: compactor
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/name: tempo
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: distributor
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/version: 2.6.0
+    helm.sh/chart: tempo-distributed-1.23.0
+    prometheus.io/service-monitor: 'false'
+  name: tempo-distributor-discovery
+  namespace: sn-tempo
+spec:
+  clusterIP: None
+  ports:
+  - name: http-metrics
+    port: 3100
+    targetPort: http-metrics
+  - name: distributor-otlp-http
+    port: 4318
+    protocol: TCP
+    targetPort: otlp-http
+  - name: grpc-distributor-otlp
+    port: 4317
+    protocol: TCP
+    targetPort: grpc-otlp
+  - name: distributor-otlp-legacy
+    port: 55680
+    protocol: TCP
+    targetPort: grpc-otlp
+  selector:
+    app.kubernetes.io/component: distributor
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/name: tempo
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: distributor
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/version: 2.6.0
+    helm.sh/chart: tempo-distributed-1.23.0
+  name: tempo-distributor
+  namespace: sn-tempo
+spec:
+  internalTrafficPolicy: Cluster
+  ports:
+  - name: http-metrics
+    port: 3100
+    targetPort: http-metrics
+  - name: grpc
+    port: 9095
+    protocol: TCP
+    targetPort: 9095
+  - name: distributor-otlp-http
+    port: 4318
+    protocol: TCP
+    targetPort: otlp-http
+  - name: grpc-distributor-otlp
+    port: 4317
+    protocol: TCP
+    targetPort: grpc-otlp
+  - name: distributor-otlp-legacy
+    port: 55680
+    protocol: TCP
+    targetPort: grpc-otlp
+  selector:
+    app.kubernetes.io/component: distributor
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/name: tempo
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations: null
+  labels:
+    app.kubernetes.io/component: gossip-ring
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/version: 2.6.0
+    helm.sh/chart: tempo-distributed-1.23.0
+  name: tempo-gossip-ring
+  namespace: sn-tempo
+spec:
+  clusterIP: None
+  ports:
+  - name: gossip-ring
+    port: 7946
+    protocol: TCP
+    targetPort: 7946
+  publishNotReadyAddresses: true
+  selector:
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/part-of: memberlist
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: ingester
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/version: 2.6.0
+    helm.sh/chart: tempo-distributed-1.23.0
+    prometheus.io/service-monitor: 'false'
+  name: tempo-ingester-discovery
+  namespace: sn-tempo
+spec:
+  clusterIP: None
+  ports:
+  - name: http-metrics
+    port: 3100
+    protocol: TCP
+    targetPort: 3100
+  - name: grpc
+    port: 9095
+    protocol: TCP
+    targetPort: 9095
+  selector:
+    app.kubernetes.io/component: ingester
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/name: tempo
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: ingester
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/version: 2.6.0
+    helm.sh/chart: tempo-distributed-1.23.0
+  name: tempo-ingester-zone-a
+  namespace: sn-tempo
+spec:
+  internalTrafficPolicy: Cluster
+  ports:
+  - name: http-metrics
+    port: 3100
+    protocol: TCP
+    targetPort: 3100
+  - name: grpc
+    port: 9095
+    protocol: TCP
+    targetPort: 9095
+  selector:
+    app.kubernetes.io/component: ingester
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/name: tempo
+    rollout-group: ingester
+    zone: zone-a
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: ingester
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/version: 2.6.0
+    helm.sh/chart: tempo-distributed-1.23.0
+  name: tempo-ingester-zone-b
+  namespace: sn-tempo
+spec:
+  internalTrafficPolicy: Cluster
+  ports:
+  - name: http-metrics
+    port: 3100
+    protocol: TCP
+    targetPort: 3100
+  - name: grpc
+    port: 9095
+    protocol: TCP
+    targetPort: 9095
+  selector:
+    app.kubernetes.io/component: ingester
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/name: tempo
+    rollout-group: ingester
+    zone: zone-b
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: ingester
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/version: 2.6.0
+    helm.sh/chart: tempo-distributed-1.23.0
+  name: tempo-ingester-zone-c
+  namespace: sn-tempo
+spec:
+  internalTrafficPolicy: Cluster
+  ports:
+  - name: http-metrics
+    port: 3100
+    protocol: TCP
+    targetPort: 3100
+  - name: grpc
+    port: 9095
+    protocol: TCP
+    targetPort: 9095
+  selector:
+    app.kubernetes.io/component: ingester
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/name: tempo
+    rollout-group: ingester
+    zone: zone-c
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: memcached
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/version: 2.6.0
+    helm.sh/chart: tempo-distributed-1.23.0
+  name: tempo-memcached
+  namespace: sn-tempo
+spec:
+  ports:
+  - name: memcached-client
+    port: 11211
+    targetPort: 11211
+  - name: http-metrics
+    port: 9150
+    targetPort: http-metrics
+  selector:
+    app.kubernetes.io/component: memcached
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/name: tempo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: querier
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/version: 2.6.0
+    helm.sh/chart: tempo-distributed-1.23.0
+  name: tempo-querier
+  namespace: sn-tempo
+spec:
+  ports:
+  - name: http-metrics
+    port: 3100
+    protocol: TCP
+    targetPort: 3100
+  - name: grpc
+    port: 9095
+    protocol: TCP
+    targetPort: 9095
+  selector:
+    app.kubernetes.io/component: querier
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/name: tempo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/version: 2.6.0
+    helm.sh/chart: tempo-distributed-1.23.0
+  name: tempo-query-frontend-discovery
+  namespace: sn-tempo
+spec:
+  clusterIP: None
+  ports:
+  - name: http
+    port: 3100
+    targetPort: 3100
+  - name: grpc
+    port: 9095
+    protocol: TCP
+    targetPort: 9095
+  - name: grpclb
+    port: 9096
+    protocol: TCP
+    targetPort: grpc
+  publishNotReadyAddresses: true
+  selector:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/name: tempo
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/version: 2.6.0
+    helm.sh/chart: tempo-distributed-1.23.0
+  name: tempo-query-frontend
+  namespace: sn-tempo
+spec:
+  ports:
+  - name: http-metrics
+    port: 3100
+    targetPort: 3100
+  - name: grpc
+    port: 9095
+    protocol: TCP
+    targetPort: 9095
+  selector:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/name: tempo
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/component: compactor
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/part-of: memberlist
+    app.kubernetes.io/version: 2.6.0
+    helm.sh/chart: tempo-distributed-1.23.0
+  name: tempo-compactor
+  namespace: sn-tempo
+spec:
+  minReadySeconds: 10
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: compactor
+      app.kubernetes.io/instance: tempo
+      app.kubernetes.io/name: tempo
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+  template:
+    metadata:
+      annotations:
+        checksum/config: 72770a1798959db91424c20811f94c849aa1c13e4e77b117e79ba081cc45277d
+      labels:
+        app.kubernetes.io/component: compactor
+        app.kubernetes.io/instance: tempo
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: tempo
+        app.kubernetes.io/part-of: memberlist
+        app.kubernetes.io/version: 2.6.0
+        helm.sh/chart: tempo-distributed-1.23.0
+    spec:
+      containers:
+      - args:
+        - -target=compactor
+        - -config.file=/conf/tempo.yaml
+        - -mem-ballast-size-mbs=1024
+        image: docker.io/grafana/tempo:2.6.0
+        imagePullPolicy: IfNotPresent
+        name: compactor
+        ports:
+        - containerPort: 3100
+          name: http-metrics
+        - containerPort: 7946
+          name: http-memberlist
+        resources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsGroup: 1000
+          runAsNonRoot: true
+          runAsUser: 1000
+        volumeMounts:
+        - mountPath: /conf
+          name: config
+        - mountPath: /runtime-config
+          name: runtime-config
+        - mountPath: /var/tempo
+          name: tempo-compactor-store
+      enableServiceLinks: false
+      nodeSelector:
+        exec: storage
+      securityContext:
+        fsGroup: 1000
+      serviceAccountName: tempo
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          items:
+          - key: tempo.yaml
+            path: tempo.yaml
+          name: tempo-config
+        name: config
+      - configMap:
+          items:
+          - key: overrides.yaml
+            path: overrides.yaml
+          name: tempo-runtime
+        name: runtime-config
+      - emptyDir: {}
+        name: tempo-compactor-store
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/component: distributor
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/part-of: memberlist
+    app.kubernetes.io/version: 2.6.0
+    helm.sh/chart: tempo-distributed-1.23.0
+  name: tempo-distributor
+  namespace: sn-tempo
+spec:
+  minReadySeconds: 10
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: distributor
+      app.kubernetes.io/instance: tempo
+      app.kubernetes.io/name: tempo
+  template:
+    metadata:
+      annotations:
+        checksum/config: 72770a1798959db91424c20811f94c849aa1c13e4e77b117e79ba081cc45277d
+      labels:
+        app.kubernetes.io/component: distributor
+        app.kubernetes.io/instance: tempo
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: tempo
+        app.kubernetes.io/part-of: memberlist
+        app.kubernetes.io/version: 2.6.0
+        helm.sh/chart: tempo-distributed-1.23.0
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/component: distributor
+                  app.kubernetes.io/instance: tempo
+                  app.kubernetes.io/name: tempo
+              topologyKey: topology.kubernetes.io/zone
+            weight: 100
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app.kubernetes.io/component: distributor
+                app.kubernetes.io/instance: tempo
+                app.kubernetes.io/name: tempo
+            topologyKey: kubernetes.io/hostname
+      containers:
+      - args:
+        - -target=distributor
+        - -config.file=/conf/tempo.yaml
+        - -mem-ballast-size-mbs=1024
+        image: docker.io/grafana/tempo:2.6.0
+        imagePullPolicy: IfNotPresent
+        name: distributor
+        ports:
+        - containerPort: 7946
+          name: http-memberlist
+          protocol: TCP
+        - containerPort: 3100
+          name: http-metrics
+        - containerPort: 4318
+          name: otlp-http
+          protocol: TCP
+        - containerPort: 4317
+          name: grpc-otlp
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http-metrics
+          initialDelaySeconds: 30
+          timeoutSeconds: 1
+        resources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsGroup: 1000
+          runAsNonRoot: true
+          runAsUser: 1000
+        volumeMounts:
+        - mountPath: /conf
+          name: config
+        - mountPath: /runtime-config
+          name: runtime-config
+        - mountPath: /var/tempo
+          name: tempo-distributor-store
+      enableServiceLinks: false
+      nodeSelector:
+        exec: storage
+      securityContext:
+        fsGroup: 1000
+      serviceAccountName: tempo
+      terminationGracePeriodSeconds: 30
+      topologySpreadConstraints:
+      - labelSelector:
+          matchLabels:
+            app.kubernetes.io/component: distributor
+            app.kubernetes.io/instance: tempo
+            app.kubernetes.io/name: tempo
+        maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: ScheduleAnyway
+      volumes:
+      - configMap:
+          items:
+          - key: tempo.yaml
+            path: tempo.yaml
+          name: tempo-config
+        name: config
+      - configMap:
+          items:
+          - key: overrides.yaml
+            path: overrides.yaml
+          name: tempo-runtime
+        name: runtime-config
+      - emptyDir: {}
+        name: tempo-distributor-store
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/component: querier
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/part-of: memberlist
+    app.kubernetes.io/version: 2.6.0
+    helm.sh/chart: tempo-distributed-1.23.0
+  name: tempo-querier
+  namespace: sn-tempo
+spec:
+  minReadySeconds: 10
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: querier
+      app.kubernetes.io/instance: tempo
+      app.kubernetes.io/name: tempo
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+  template:
+    metadata:
+      annotations:
+        checksum/config: 72770a1798959db91424c20811f94c849aa1c13e4e77b117e79ba081cc45277d
+      labels:
+        app.kubernetes.io/component: querier
+        app.kubernetes.io/instance: tempo
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: tempo
+        app.kubernetes.io/part-of: memberlist
+        app.kubernetes.io/version: 2.6.0
+        helm.sh/chart: tempo-distributed-1.23.0
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/component: querier
+                  app.kubernetes.io/instance: tempo
+                  app.kubernetes.io/name: tempo
+              topologyKey: topology.kubernetes.io/zone
+            weight: 100
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app.kubernetes.io/component: querier
+                app.kubernetes.io/instance: tempo
+                app.kubernetes.io/name: tempo
+            topologyKey: kubernetes.io/hostname
+      containers:
+      - args:
+        - -target=querier
+        - -config.file=/conf/tempo.yaml
+        - -mem-ballast-size-mbs=1024
+        image: docker.io/grafana/tempo:2.6.0
+        imagePullPolicy: IfNotPresent
+        name: querier
+        ports:
+        - containerPort: 7946
+          name: http-memberlist
+          protocol: TCP
+        - containerPort: 3100
+          name: http-metrics
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http-metrics
+          initialDelaySeconds: 30
+          timeoutSeconds: 1
+        resources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsGroup: 1000
+          runAsNonRoot: true
+          runAsUser: 1000
+        volumeMounts:
+        - mountPath: /conf
+          name: config
+        - mountPath: /runtime-config
+          name: runtime-config
+        - mountPath: /var/tempo
+          name: tempo-querier-store
+      enableServiceLinks: false
+      nodeSelector:
+        exec: storage
+      securityContext:
+        fsGroup: 1000
+      serviceAccountName: tempo
+      terminationGracePeriodSeconds: 30
+      topologySpreadConstraints:
+      - labelSelector:
+          matchLabels:
+            app.kubernetes.io/component: querier
+            app.kubernetes.io/instance: tempo
+            app.kubernetes.io/name: tempo
+        maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: ScheduleAnyway
+      volumes:
+      - configMap:
+          items:
+          - key: tempo.yaml
+            path: tempo.yaml
+          name: tempo-config
+        name: config
+      - configMap:
+          items:
+          - key: overrides.yaml
+            path: overrides.yaml
+          name: tempo-runtime
+        name: runtime-config
+      - emptyDir: {}
+        name: tempo-querier-store
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/version: 2.6.0
+    helm.sh/chart: tempo-distributed-1.23.0
+  name: tempo-query-frontend
+  namespace: sn-tempo
+spec:
+  minReadySeconds: 10
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: query-frontend
+      app.kubernetes.io/instance: tempo
+      app.kubernetes.io/name: tempo
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+  template:
+    metadata:
+      annotations:
+        checksum/config: 72770a1798959db91424c20811f94c849aa1c13e4e77b117e79ba081cc45277d
+      labels:
+        app.kubernetes.io/component: query-frontend
+        app.kubernetes.io/instance: tempo
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: tempo
+        app.kubernetes.io/version: 2.6.0
+        helm.sh/chart: tempo-distributed-1.23.0
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/component: query-frontend
+                  app.kubernetes.io/instance: tempo
+                  app.kubernetes.io/name: tempo
+              topologyKey: topology.kubernetes.io/zone
+            weight: 100
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app.kubernetes.io/component: query-frontend
+                app.kubernetes.io/instance: tempo
+                app.kubernetes.io/name: tempo
+            topologyKey: kubernetes.io/hostname
+      containers:
+      - args:
+        - -target=query-frontend
+        - -config.file=/conf/tempo.yaml
+        - -mem-ballast-size-mbs=1024
+        image: docker.io/grafana/tempo:2.6.0
+        imagePullPolicy: IfNotPresent
+        name: query-frontend
+        ports:
+        - containerPort: 3100
+          name: http-metrics
+        - containerPort: 9095
+          name: grpc
+        resources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsGroup: 1000
+          runAsNonRoot: true
+          runAsUser: 1000
+        volumeMounts:
+        - mountPath: /conf
+          name: config
+        - mountPath: /runtime-config
+          name: runtime-config
+        - mountPath: /var/tempo
+          name: tempo-queryfrontend-store
+      enableServiceLinks: false
+      nodeSelector:
+        exec: storage
+      securityContext:
+        fsGroup: 1000
+      serviceAccountName: tempo
+      terminationGracePeriodSeconds: 30
+      topologySpreadConstraints:
+      - labelSelector:
+          matchLabels:
+            app.kubernetes.io/component: query-frontend
+            app.kubernetes.io/instance: tempo
+            app.kubernetes.io/name: tempo
+        maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: ScheduleAnyway
+      volumes:
+      - configMap:
+          items:
+          - key: tempo.yaml
+            path: tempo.yaml
+          name: tempo-config
+        name: config
+      - configMap:
+          items:
+          - key: overrides.yaml
+            path: overrides.yaml
+          name: tempo-runtime
+        name: runtime-config
+      - emptyDir: {}
+        name: tempo-queryfrontend-store
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  annotations:
+    rollout-max-unavailable: '50'
+  labels:
+    app.kubernetes.io/component: ingester
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/part-of: memberlist
+    app.kubernetes.io/version: 2.6.0
+    helm.sh/chart: tempo-distributed-1.23.0
+    name: ingester-zone-a
+    rollout-group: ingester
+    zone: zone-a
+  name: tempo-ingester-zone-a
+  namespace: sn-tempo
+spec:
+  podManagementPolicy: Parallel
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: ingester
+      app.kubernetes.io/instance: tempo
+      app.kubernetes.io/name: tempo
+      rollout-group: ingester
+      zone: zone-a
+  serviceName: ingester
+  template:
+    metadata:
+      annotations:
+        checksum/config: 72770a1798959db91424c20811f94c849aa1c13e4e77b117e79ba081cc45277d
+      labels:
+        app.kubernetes.io/component: ingester
+        app.kubernetes.io/instance: tempo
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: tempo
+        app.kubernetes.io/part-of: memberlist
+        app.kubernetes.io/version: 2.6.0
+        helm.sh/chart: tempo-distributed-1.23.0
+        name: ingester-zone-a
+        rollout-group: ingester
+        zone: zone-a
+    spec:
+      containers:
+      - args:
+        - -target=ingester
+        - -config.file=/conf/tempo.yaml
+        - -mem-ballast-size-mbs=1024
+        - -ingester.availability-zone=zone-a
+        image: docker.io/grafana/tempo:2.6.0
+        imagePullPolicy: IfNotPresent
+        name: ingester
+        ports:
+        - containerPort: 9095
+          name: grpc
+        - containerPort: 7946
+          name: http-memberlist
+        - containerPort: 3100
+          name: http-metrics
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http-metrics
+          initialDelaySeconds: 30
+          timeoutSeconds: 1
+        resources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsGroup: 1000
+          runAsNonRoot: true
+          runAsUser: 1000
+        volumeMounts:
+        - mountPath: /conf
+          name: config
+        - mountPath: /runtime-config
+          name: runtime-config
+        - mountPath: /var/tempo
+          name: data
+      enableServiceLinks: false
+      initContainers: []
+      nodeSelector:
+        exec: storage
+      securityContext:
+        fsGroup: 1000
+      serviceAccountName: tempo
+      terminationGracePeriodSeconds: 300
+      topologySpreadConstraints:
+      - labelSelector:
+          matchLabels:
+            app.kubernetes.io/component: ingester
+            app.kubernetes.io/instance: tempo
+            app.kubernetes.io/name: tempo
+        maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: ScheduleAnyway
+      volumes:
+      - configMap:
+          items:
+          - key: tempo.yaml
+            path: tempo.yaml
+          name: tempo-config
+        name: config
+      - configMap:
+          items:
+          - key: overrides.yaml
+            path: overrides.yaml
+          name: tempo-runtime
+        name: runtime-config
+      - emptyDir: {}
+        name: data
+  updateStrategy:
+    type: OnDelete
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  annotations:
+    rollout-max-unavailable: '50'
+  labels:
+    app.kubernetes.io/component: ingester
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/part-of: memberlist
+    app.kubernetes.io/version: 2.6.0
+    helm.sh/chart: tempo-distributed-1.23.0
+    name: ingester-zone-b
+    rollout-group: ingester
+    zone: zone-b
+  name: tempo-ingester-zone-b
+  namespace: sn-tempo
+spec:
+  podManagementPolicy: Parallel
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: ingester
+      app.kubernetes.io/instance: tempo
+      app.kubernetes.io/name: tempo
+      rollout-group: ingester
+      zone: zone-b
+  serviceName: ingester
+  template:
+    metadata:
+      annotations:
+        checksum/config: 72770a1798959db91424c20811f94c849aa1c13e4e77b117e79ba081cc45277d
+      labels:
+        app.kubernetes.io/component: ingester
+        app.kubernetes.io/instance: tempo
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: tempo
+        app.kubernetes.io/part-of: memberlist
+        app.kubernetes.io/version: 2.6.0
+        helm.sh/chart: tempo-distributed-1.23.0
+        name: ingester-zone-b
+        rollout-group: ingester
+        zone: zone-b
+    spec:
+      containers:
+      - args:
+        - -target=ingester
+        - -config.file=/conf/tempo.yaml
+        - -mem-ballast-size-mbs=1024
+        - -ingester.availability-zone=zone-b
+        image: docker.io/grafana/tempo:2.6.0
+        imagePullPolicy: IfNotPresent
+        name: ingester
+        ports:
+        - containerPort: 9095
+          name: grpc
+        - containerPort: 7946
+          name: http-memberlist
+        - containerPort: 3100
+          name: http-metrics
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http-metrics
+          initialDelaySeconds: 30
+          timeoutSeconds: 1
+        resources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsGroup: 1000
+          runAsNonRoot: true
+          runAsUser: 1000
+        volumeMounts:
+        - mountPath: /conf
+          name: config
+        - mountPath: /runtime-config
+          name: runtime-config
+        - mountPath: /var/tempo
+          name: data
+      enableServiceLinks: false
+      initContainers: []
+      nodeSelector:
+        exec: storage
+      securityContext:
+        fsGroup: 1000
+      serviceAccountName: tempo
+      terminationGracePeriodSeconds: 300
+      topologySpreadConstraints:
+      - labelSelector:
+          matchLabels:
+            app.kubernetes.io/component: ingester
+            app.kubernetes.io/instance: tempo
+            app.kubernetes.io/name: tempo
+        maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: ScheduleAnyway
+      volumes:
+      - configMap:
+          items:
+          - key: tempo.yaml
+            path: tempo.yaml
+          name: tempo-config
+        name: config
+      - configMap:
+          items:
+          - key: overrides.yaml
+            path: overrides.yaml
+          name: tempo-runtime
+        name: runtime-config
+      - emptyDir: {}
+        name: data
+  updateStrategy:
+    type: OnDelete
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  annotations:
+    rollout-max-unavailable: '50'
+  labels:
+    app.kubernetes.io/component: ingester
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/part-of: memberlist
+    app.kubernetes.io/version: 2.6.0
+    helm.sh/chart: tempo-distributed-1.23.0
+    name: ingester-zone-c
+    rollout-group: ingester
+    zone: zone-c
+  name: tempo-ingester-zone-c
+  namespace: sn-tempo
+spec:
+  podManagementPolicy: Parallel
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: ingester
+      app.kubernetes.io/instance: tempo
+      app.kubernetes.io/name: tempo
+      rollout-group: ingester
+      zone: zone-c
+  serviceName: ingester
+  template:
+    metadata:
+      annotations:
+        checksum/config: 72770a1798959db91424c20811f94c849aa1c13e4e77b117e79ba081cc45277d
+      labels:
+        app.kubernetes.io/component: ingester
+        app.kubernetes.io/instance: tempo
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: tempo
+        app.kubernetes.io/part-of: memberlist
+        app.kubernetes.io/version: 2.6.0
+        helm.sh/chart: tempo-distributed-1.23.0
+        name: ingester-zone-c
+        rollout-group: ingester
+        zone: zone-c
+    spec:
+      containers:
+      - args:
+        - -target=ingester
+        - -config.file=/conf/tempo.yaml
+        - -mem-ballast-size-mbs=1024
+        - -ingester.availability-zone=zone-c
+        image: docker.io/grafana/tempo:2.6.0
+        imagePullPolicy: IfNotPresent
+        name: ingester
+        ports:
+        - containerPort: 9095
+          name: grpc
+        - containerPort: 7946
+          name: http-memberlist
+        - containerPort: 3100
+          name: http-metrics
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http-metrics
+          initialDelaySeconds: 30
+          timeoutSeconds: 1
+        resources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsGroup: 1000
+          runAsNonRoot: true
+          runAsUser: 1000
+        volumeMounts:
+        - mountPath: /conf
+          name: config
+        - mountPath: /runtime-config
+          name: runtime-config
+        - mountPath: /var/tempo
+          name: data
+      enableServiceLinks: false
+      initContainers: []
+      nodeSelector:
+        exec: storage
+      securityContext:
+        fsGroup: 1000
+      serviceAccountName: tempo
+      terminationGracePeriodSeconds: 300
+      topologySpreadConstraints:
+      - labelSelector:
+          matchLabels:
+            app.kubernetes.io/component: ingester
+            app.kubernetes.io/instance: tempo
+            app.kubernetes.io/name: tempo
+        maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: ScheduleAnyway
+      volumes:
+      - configMap:
+          items:
+          - key: tempo.yaml
+            path: tempo.yaml
+          name: tempo-config
+        name: config
+      - configMap:
+          items:
+          - key: overrides.yaml
+            path: overrides.yaml
+          name: tempo-runtime
+        name: runtime-config
+      - emptyDir: {}
+        name: data
+  updateStrategy:
+    type: OnDelete
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app.kubernetes.io/component: memcached
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/version: 2.6.0
+    helm.sh/chart: tempo-distributed-1.23.0
+  name: tempo-memcached
+  namespace: sn-tempo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: memcached
+      app.kubernetes.io/instance: tempo
+      app.kubernetes.io/name: tempo
+  serviceName: memcached
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: memcached
+        app.kubernetes.io/instance: tempo
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: tempo
+        app.kubernetes.io/version: 2.6.0
+        helm.sh/chart: tempo-distributed-1.23.0
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/component: memcached
+                  app.kubernetes.io/instance: tempo
+                  app.kubernetes.io/name: tempo
+              topologyKey: topology.kubernetes.io/zone
+            weight: 100
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app.kubernetes.io/component: memcached
+                app.kubernetes.io/instance: tempo
+                app.kubernetes.io/name: tempo
+            topologyKey: kubernetes.io/hostname
+      containers:
+      - image: docker.io/memcached:1.6.29-alpine
+        imagePullPolicy: IfNotPresent
+        name: memcached
+        ports:
+        - containerPort: 11211
+          name: client
+        resources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsGroup: 1000
+          runAsNonRoot: true
+          runAsUser: 1000
+      enableServiceLinks: false
+      nodeSelector:
+        exec: storage
+      securityContext:
+        fsGroup: 1000
+      serviceAccountName: tempo
+      topologySpreadConstraints:
+      - labelSelector:
+          matchLabels:
+            app.kubernetes.io/component: memcached
+            app.kubernetes.io/instance: tempo
+            app.kubernetes.io/name: tempo
+        maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: ScheduleAnyway
+  updateStrategy:
+    type: RollingUpdate

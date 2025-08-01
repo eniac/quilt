@@ -1,0 +1,8 @@
+[package]
+name = "DbInterface"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+memcache = "0.17.2"
+redis = "0.25.3"

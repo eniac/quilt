@@ -1,0 +1,8 @@
+upload-movie-id compose-review-upload-movie-id
+upload-movie-id rating-service
+compose-review-upload-movie-id compose-and-upload
+rating-service compose-review-upload-rating
+compose-and-upload store-review
+compose-and-upload upload-user-review
+compose-and-upload upload-movie-review
+compose-review-upload-rating compose-and-upload
