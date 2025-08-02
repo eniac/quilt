@@ -210,6 +210,7 @@ cd quilt/test/wrk2_fission/media_microservice
 ### Figure 8(a)(b) experiment
 
 - Each curve can be tested seperately
+- For Figure 8 and Figure 9(a), if the curve doesn't show as expected, you may want to try smaller number of connections listed in each script. For example: change [here](https://github.com/eniac/quilt/blob/main/test/wrk2_fission/social_network/figure8ab.sh#L31) to smaller numbers
 
 #### To test the baseline curve
 
