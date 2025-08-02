@@ -28,7 +28,7 @@ fi
 
 
 function measure_perf {
-  CON=(1 2 3 5 7 9 13 18 25 32 39 50 70 90 110 130 150 180 210 240 270 300 350 400)
+  CON=(1 3 5 7 9 13 18 25 32 39 50 70 90 110 130 150 180 210 240 270 300 350)
   # Iterate over each element in the array
   rm -rf *.log
   for con in "${CON[@]}"; do
