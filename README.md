@@ -1,6 +1,6 @@
 # Pre-requisites
 
-To reproduce our results you will need (1) a computing cluster with enough machines / CPUs, (2) a local machine that has SSH access to every node in the computing cluster, and (3) an account in [DockerHub](https://hub.docker.com/). 
+To reproduce our results you will need (1) a computing cluster with enough machines / CPUs, each node can run `sudo` command without being prompted for a password (2) a local machine that has SSH access to every node in the computing cluster, and (3) an account in [DockerHub](https://hub.docker.com/). 
 
 
 ## Computing cluster
