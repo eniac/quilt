@@ -302,6 +302,9 @@ cd quilt/benchmark/DeathStarBench_fakedb/hotel_reservation_async/merge
 
 # run the script to measure throughput and latency
 ./figure8c.sh perf nearby-cinema-top-merged merged
+
+# collect the throughput and latency data
+./getlattput.py
 ```
 
 #### To test the merge-into-2 curve
@@ -314,6 +317,9 @@ cd quilt/benchmark/DeathStarBench_fakedb/hotel_reservation_async/merge
 
 # run the script to measure throughput and latency
 ./figure8c.sh perf nearby-cinema-top-2 merged
+
+# collect the throughput and latency data
+./getlattput.py
 ```
 
 ### Figure 9(a) experiment
@@ -346,6 +352,10 @@ cd quilt/benchmark/DeathStarBench_fakedb/social_network/merge
   + compilation time will show at the end of `RUN ./merge_tree.py compile funcTree` line
   + merging time will show at the end of `RUN ./merge_tree.py merge funcTree` line
   + linking time will show at the end of `RUN ./merge_tree.py link funcTree` line
+- For the merging results, please merge the following workflows
+  + [compose-review](https://github.com/eniac/quilt/blob/main/benchmark/DeathStarBench_fakedb/media_microservice/merge/funcTrees/funcTree.compose_review) (15 functions)
+  + [page-service](https://github.com/eniac/quilt/blob/main/benchmark/DeathStarBench_fakedb/media_microservice/merge/funcTrees/funcTree.page_service) (6 functions)
+  + [read-home-timeline](https://github.com/eniac/quilt/blob/main/benchmark/DeathStarBench_fakedb/social_network_async/merge/funcTrees/funcTree.read_home_timeline) (2 functions)
 
 ### Figure 9(b) and 10 experiment
 
