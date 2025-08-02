@@ -344,6 +344,8 @@ cd quilt/test/wrk2_fission/social_network
 ### Figure 9(c) experiment
 
 ```bash
+# First, navigate to the application directory corresponding to the workflow
+# under the DeathStarBench_fakedb directory
 cd quilt/benchmark/DeathStarBench_fakedb/social_network/merge
 ./build.sh merge_fission compose-post funcTrees/funcTree.compose_post
 ```
