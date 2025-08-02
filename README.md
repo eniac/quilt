@@ -210,7 +210,7 @@ cd quilt/test/wrk2_fission/media_microservice
 ### Figure 8(a)(b) experiment
 
 - Each curve can be tested seperately
-- For Figure 8 and Figure 9(a), if the curve doesn't show as expected, you may want to try smaller number of connections listed in each script. For example: change [here](https://github.com/eniac/quilt/blob/main/test/wrk2_fission/social_network/figure8ab.sh#L31) to smaller numbers
+- For Figure 8 and Figure 9(a), if the curve does not exhibit the expected trend, you may try using smaller connection numbers in the corresponding script. For example, consider adjusting the values [here](https://github.com/eniac/quilt/blob/main/test/wrk2_fission/social_network/figure8ab.sh#L31) to smaller ones if the throughput vs. latency curve for social_network does not follow the expected shape.
 
 #### To test the baseline curve
 
