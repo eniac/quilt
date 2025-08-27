@@ -75,19 +75,11 @@ def solve_subgraph_construction(graph, R_set, M, C, N, all_nodes, predecessors, 
                 model.addConstr(gp.quicksum(y[i, r] for r in R_set) >= 1, name=f"assign_{i}")
 
             # Constraint 3: Connectivity. 
-
-            # Sub-constraint 3(a): A node `i` can only be assigned to a subgraph rooted at `r` if `i` is reachable from `r`.
             for r in R_set:
                 for i in all_nodes:
-                    if i not in full_reachable_from[r]:
-                        model.addConstr(y[i, r] == 0, name=f"reach_{i}_{r}")
+                    if i != r and i in full_reachable_from[r] and predecessors[i]:
+                        model.addConstr(y[i, r] <= gp.quicksum(y[p, r] for p in predecessors[i]), name=f"conn_{i}_{r}")
 
-            # Sub-constraint 3(b): If a node `i` is in subgraph `G_r`, all its predecessors must also be in subgraph `G_r`.
-            for r in R_set:
-                for i in all_nodes:
-                    if i != r and i in full_reachable_from[r]:
-                        for p in predecessors[i]:
-                            model.addConstr(y[i, r] <= y[p, r], name=f"pred_{i}_{p}_{r}")
 
             # Constraint 4: Cross-Edge Definition. Links x and y variables to define a cut.
             for r in R_set:
