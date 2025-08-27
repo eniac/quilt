@@ -148,44 +148,61 @@ class TestFunctionMerging(unittest.TestCase):
         G = self._create_graph(nodes, edges)
         M, C = 35, 35
         root, all_nodes, preds, reach = preprocess_graph(G)
-        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=1)
+        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=2)
         self.assertIsNotNone(R)
         self.assertEqual(len(R), 1)
         self.assertEqual(cost, 0)
 
+    def test_sync_merge_possible(self):
+        print("\n--- Running Sync Test: Sync Merge Possible ---")
+        nodes = {0: {'m': 10, 'c': 10}, 1: {'m': 10, 'c': 10}}
+        edges = [(0, 1, {'weight': 10, 'type': 'sync', 'alpha': 2})]
+        G = self._create_graph(nodes, edges)
+        M, C = 35, 35
+        root, all_nodes, preds, reach = preprocess_graph(G)
+        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=2)
+        self.assertIsNotNone(R)
+        self.assertEqual(len(R), 1)
+        self.assertEqual(cost, 0)
 
-'''
+    def test_sync_merge_still_possible(self):
+        print("\n--- Running Sync Test: Sync Merge Still Possible ---")
+        nodes = {0: {'m': 10, 'c': 10}, 1: {'m': 10, 'c': 10}}
+        edges = [(0, 1, {'weight': 10, 'type': 'sync', 'alpha': 2})]
+        G = self._create_graph(nodes, edges)
+        M, C = 20, 35
+        root, all_nodes, preds, reach = preprocess_graph(G)
+        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=2)
+        self.assertIsNotNone(R)
+        self.assertEqual(len(R), 1)
+        self.assertEqual(cost, 0)
+
+    def test_async_no_possible(self):
+        print("\n--- Running Sync Test: Sync Merge Still Possible ---")
+        nodes = {0: {'m': 10, 'c': 10}, 1: {'m': 10, 'c': 10}}
+        edges = [(0, 1, {'weight': 10, 'type': 'async', 'alpha': 2})]
+        G = self._create_graph(nodes, edges)
+        M, C = 20, 35
+        root, all_nodes, preds, reach = preprocess_graph(G)
+        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=2)
+        self.assertIsNotNone(R)
+        self.assertEqual(len(R), 2)
+        self.assertEqual(cost, 10)
 
     def test_async_forces_choice(self):
         print("\n--- Running Async Test: Async Forces Choice ---")
         nodes = {0: {'m': 5, 'c': 5}, 1: {'m': 20, 'c': 20}, 2: {'m': 5, 'c': 5}}
-        edges = [(0, 1, {'weight': 1000, 'type': 'sync'}), (0, 2, {'weight': 20, 'type': 'async'})]
+        edges = [(0, 1, {'weight': 1000, 'type': 'sync', 'alpha': 1}), (0, 2, {'weight': 20, 'type': 'async', 'alpha': 2})]
         G = self._create_graph(nodes, edges)
-        M, C, N = 30, 30, 10
+        M, C = 30, 30
         root, all_nodes, preds, reach = preprocess_graph(G)
-        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, N, root, all_nodes, preds, reach, max_k=2)
+        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=3)
         self.assertIsNotNone(R)
         # The solver will choose the cheaper option, which is to cut the async edge (cost 20)
         # and keep the sync edge internal. This results in roots {0, 2}.
         self.assertEqual(len(R), 2)
         self.assertEqual(R, {0, 2})
         self.assertAlmostEqual(cost, 20)
-
-
-
-    def test_downstream_impact_heuristic(self):
-        print("\n--- Running Test: Downstream Impact Heuristic ---")
-        nodes = {0: {'m': 5, 'c': 5}, 1: {'m': 5, 'c': 5}, 2: {'m': 50, 'c': 50}, 3: {'m': 50, 'c': 50}, 4: {'m': 5, 'c': 5}}
-        edges = [(0, 1, {'weight': 10}), (1, 2, {'weight': 10}), (1, 3, {'weight': 10}), (0, 4, {'weight': 100})]
-        G = self._create_graph(nodes, edges)
-        M, C, N = 60, 60, 1
-        root = find_root(G)
-        # Unpack the tuple returned by the selector function
-        candidates, _ = select_downstream_candidate_roots(G, root, num_candidates=1, M=M, C=C, N=N, beta=0.3, gamma=0.35, delta=0.35)
-        self.assertEqual(len(candidates), 1)
-        self.assertIn(1, candidates)
-
-
 
     def test_profitable_cloning_simple(self):
         """
@@ -200,18 +217,18 @@ class TestFunctionMerging(unittest.TestCase):
             3: {'m': 1, 'c': 1}     # Small, cheap-to-clone shared function
         }
         edges = [
-            (0, 1, {'weight': 5, 'type': 'sync'}), 
-            (0, 2, {'weight': 5, 'type': 'sync'}),
-            (1, 3, {'weight': 100, 'type': 'sync'}), 
-            (2, 3, {'weight': 100, 'type': 'sync'})
+            (0, 1, {'weight': 5, 'type': 'sync', 'alpha': 1}),
+            (0, 2, {'weight': 5, 'type': 'sync', 'alpha': 1}),
+            (1, 3, {'weight': 100, 'type': 'sync', 'alpha': 1}),
+            (2, 3, {'weight': 100, 'type': 'sync', 'alpha': 1})
         ]
         G = self._create_graph(nodes, edges)
-        M, C, N = 25, 25, 1
-        max_k = 3
+        M, C = 25, 25
+        max_k = 4
 
         root, all_nodes, preds, reach = preprocess_graph(G)
         cost, R, assignment, _ = run_root_selection_strategy(
-            "Optimal", G, M, C, N, root, all_nodes, preds, reach, max_k
+            "Optimal", G, M, C, root, all_nodes, preds, reach, max_k
         )
 
         self.assertIsNotNone(R)
@@ -221,11 +238,12 @@ class TestFunctionMerging(unittest.TestCase):
         self.assertEqual(len(R), 2)
         self.assertEqual(R, {0, 1})
         self.assertAlmostEqual(cost, 5)
-        
+
         # Verify that node 3 was actually cloned in the assignment
         self.assertIsNotNone(assignment)
-        self.assertEqual(assignment.get((3, 0)), 1, "Node 3 should be in subgraph G0")
-        self.assertEqual(assignment.get((3, 1)), 1, "Node 3 should be in subgraph G1")
+        self.assertIn(3, assignment.get(0), "Node 3 should be in subgraph G0")
+        self.assertIn(3, assignment.get(1), "Node 3 should be in subgraph G1")
+
 
     def test_profitable_cloning_complex(self):
         """
@@ -240,19 +258,19 @@ class TestFunctionMerging(unittest.TestCase):
             3: {'m': 10, 'c': 10} # Shared function is now expensive
         }
         edges = [
-            (0, 1, {'weight': 5, 'type': 'sync'}), 
+            (0, 1, {'weight': 5, 'type': 'sync'}),
             (0, 2, {'weight': 5, 'type': 'sync'}),
-            (1, 3, {'weight': 100, 'type': 'sync'}), 
+            (1, 3, {'weight': 100, 'type': 'sync'}),
             (2, 3, {'weight': 100, 'type': 'sync'})
         ]
         G = self._create_graph(nodes, edges)
         # Capacity allows merging one large function with the expensive shared one.
-        M, C, N = 26, 26, 1
-        max_k = 3
+        M, C = 26, 26
+        max_k = 4
 
         root, all_nodes, preds, reach = preprocess_graph(G)
         cost, R, assignment, _ = run_root_selection_strategy(
-            "Optimal", G, M, C, N, root, all_nodes, preds, reach, max_k
+            "Optimal", G, M, C, root, all_nodes, preds, reach, max_k
         )
 
         self.assertIsNotNone(R)
@@ -276,10 +294,10 @@ class TestFunctionMerging(unittest.TestCase):
         }
         # Both 0 and 1 call 2 asynchronously.
         edges = [
-            (0, 2, {'weight': 100, 'type': 'async'}),
-            (1, 2, {'weight': 100, 'type': 'async'})
+            (0, 2, {'weight': 100, 'type': 'async', 'alpha': 10}),
+            (1, 2, {'weight': 100, 'type': 'async', 'alpha': 10})
         ]
-        
+
         # This graph has two roots (0 and 1). The code expects one.
         # We add a single, global root node to make the graph an rDAG.
         nodes[100] = {'m':1, 'c':1}
@@ -288,18 +306,18 @@ class TestFunctionMerging(unittest.TestCase):
             (100, 1, {'weight': 1, 'type': 'sync'})
         ])
         G = self._create_graph(nodes, edges)
-        
+
         # alpha = ceil(100/10) = 10.
         # Peak cost of merging {0,2}: 10+1 + 1*(10-1) = 20.
         # Peak cost of merging {1,2}: 10+1 + 1*(10-1) = 20.
         # Capacity is enough to merge one path.
-        M, C, N = 20, 20, 10
+        M, C = 20, 20
         max_k = 3
 
         root, all_nodes, preds, reach = preprocess_graph(G)
 
         cost, R, assignment, _ = run_root_selection_strategy(
-            "Optimal", G, M, C, N, root, all_nodes, preds, reach, max_k=3
+            "Optimal", G, M, C, root, all_nodes, preds, reach, max_k=3
         )
 
         self.assertIsNotNone(R)
@@ -309,9 +327,9 @@ class TestFunctionMerging(unittest.TestCase):
         self.assertEqual(len(R), 3)
         self.assertEqual(R, {0, 1, 100})
         self.assertAlmostEqual(cost, 2)
-        self.assertEqual(assignment.get((2, 0)), 1)
-        self.assertEqual(assignment.get((2, 1)), 1)
-        
+        self.assertIn(2, assignment.get(0))
+        self.assertIn(2, assignment.get(1))
+
     def test_infeasible_due_to_single_node_capacity(self):
         """
         Tests that the algorithm correctly identifies an infeasible problem
@@ -324,13 +342,13 @@ class TestFunctionMerging(unittest.TestCase):
         }
         edges = [(0, 1, {'weight': 10, 'type': 'sync'})]
         G = self._create_graph(nodes, edges)
-        
-        M, C, N = 50, 50, 1
+
+        M, C = 50, 50
         max_k = 2
 
         root, all_nodes, preds, reach = preprocess_graph(G)
         cost, R, assignment, _ = run_root_selection_strategy(
-            "Optimal", G, M, C, N, root, all_nodes, preds, reach, max_k
+            "Optimal", G, M, C, root, all_nodes, preds, reach, max_k
         )
 
         # There should be no valid assignment
@@ -338,9 +356,10 @@ class TestFunctionMerging(unittest.TestCase):
         self.assertIsNone(R, "Roots should be None for an infeasible problem")
         self.assertIsNone(assignment, "Assignment should be None for an infeasible problem")
 
+
     def test_multiple_internal_async_penalties(self):
         """
-        Tests that the resource penalty is correctly summed for multiple
+        Tests that the cost is correctly summed for multiple
         internal async calls within a single potential subgraph.
         """
         print("\n--- Running Async Test: Multiple Internal Async Penalties ---")
@@ -350,28 +369,28 @@ class TestFunctionMerging(unittest.TestCase):
             2: {'m': 5, 'c': 5},
             3: {'m': 5, 'c': 5}
         }
-        # A simple chain, where two edges are async
+        # A simple chain, where two edges are async. Assume N = 5
         edges = [
             (0, 1, {'weight': 10, 'type': 'sync'}),
-            (1, 2, {'weight': 10, 'type': 'async'}), # alpha = ceil(10/5) = 2
-            (2, 3, {'weight': 15, 'type': 'async'})  # alpha = ceil(15/5) = 3
+            (1, 2, {'weight': 10, 'type': 'async', 'alpha': 2},), # alpha = ceil(10/5) = 2
+            (2, 3, {'weight': 15, 'type': 'async', 'alpha': 3})  # alpha = ceil(15/5) = 3
         ]
         G = self._create_graph(nodes, edges)
-        
+
         # Baseline memory for {1,2,3} is 5+5+5 = 15.
         # Penalty for (1,2) is 5 * (2-1) = 5.
         # Penalty for (2,3) is 5 * (3-1) = 10.
         # Total peak memory for {1,2,3} if merged: 15 + 5 + 10 = 30.
-        
+
         # Set capacity so that merging {1,2,3} is not possible.
-        M, C, N = 29, 29, 5
+        M, C = 29, 29
         max_k = 3
 
         root, all_nodes, preds, reach = preprocess_graph(G)
         cost, R, assignment, _ = run_root_selection_strategy(
-            "Optimal", G, M, C, N, root, all_nodes, preds, reach, max_k
+            "Optimal", G, M, C, root, all_nodes, preds, reach, max_k
         )
-        
+
         # The solver cannot merge everything. It must make a cut.
         # Option 1: Cut (0,1). R={1}. Cost=10. G1={1,2,3} is infeasible.
         # Option 2: Cut (1,2). R={0,2}. Cost=10. G0={0,1}, G2={2,3} (peak mem=5+5+5*(3-1)=20 <= 29). Feasible.
@@ -381,6 +400,22 @@ class TestFunctionMerging(unittest.TestCase):
         self.assertEqual(len(R), 2)
         self.assertEqual(R, {0, 2})
         self.assertAlmostEqual(cost, 10)
+
+
+'''
+    def test_downstream_impact_heuristic(self):
+        print("\n--- Running Test: Downstream Impact Heuristic ---")
+        nodes = {0: {'m': 5, 'c': 5}, 1: {'m': 5, 'c': 5}, 2: {'m': 50, 'c': 50}, 3: {'m': 50, 'c': 50}, 4: {'m': 5, 'c': 5}}
+        edges = [(0, 1, {'weight': 10}), (1, 2, {'weight': 10}), (1, 3, {'weight': 10}), (0, 4, {'weight': 100})]
+        G = self._create_graph(nodes, edges)
+        M, C, N = 60, 60, 1
+        root = find_root(G)
+        # Unpack the tuple returned by the selector function
+        candidates, _ = select_downstream_candidate_roots(G, root, num_candidates=1, M=M, C=C, N=N, beta=0.3, gamma=0.35, delta=0.35)
+        self.assertEqual(len(candidates), 1)
+        self.assertIn(1, candidates)
+
+
 
     def test_forced_cloning_by_async_penalty(self):
         """
