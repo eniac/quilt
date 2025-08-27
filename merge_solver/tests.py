@@ -401,6 +401,53 @@ class TestFunctionMerging(unittest.TestCase):
         self.assertEqual(R, {0, 2})
         self.assertAlmostEqual(cost, 10)
 
+    def test_forced_cloning_by_async_penalty(self):
+        """
+        Tests a scenario where an async cost makes one merge path infeasible,
+        forcing the algorithm to clone a shared function.
+        """
+        print("\n--- Running Cloning Test: Forced Cloning by Async Penalty ---")
+        nodes = {
+            0: {'m': 10, 'c': 10}, # Root
+            1: {'m': 10, 'c': 10}, # Path 1
+            2: {'m': 10, 'c': 10}, # Path 2
+            3: {'m': 5, 'c': 5}   # Shared function
+        }
+
+        # Assume N = 2
+        edges = [
+            (0, 1, {'weight': 1, 'type': 'sync'}),
+            (0, 2, {'weight': 100, 'type': 'sync'}), # Expensive to cut this edge
+            (1, 3, {'weight': 5, 'type': 'async', 'alpha': 3}),  # alpha = ceil(5/2) = 3
+            (2, 3, {'weight': 5, 'type': 'sync'})    # Sync call
+        ]
+        G = self._create_graph(nodes, edges)
+
+        # Let's analyze resource usage for potential subgraphs containing node 3.
+        # Subgraph {2,3} (sync call): mem = 10 + 5 = 15. Feasible.
+        # Subgraph {1,3} (async call): peak mem = 10 + 5 + penalty = 15 + 5 * (3-1) = 25.
+
+        # Set capacity to make both merge paths feasible if cloned.
+        M, C = 25, 25
+        max_k = 3
+
+        root, all_nodes, preds, reach = preprocess_graph(G)
+        cost, R, assignment, _ = run_root_selection_strategy(
+            "Optimal", G, M, C, root, all_nodes, preds, reach, max_k
+        )
+
+        # With M=25, the optimal solution is to clone node 3.
+        # This requires roots R={0, 1}.
+        # Assignment: G0={0,2,3} (mem=10+10+5=25 <= 25). Feasible.
+        #             G1={1,3} (peak mem=10+5+5*(3-1)=25 <= 25). Feasible.
+        # The only cross-edge is (0,1), for a cost of 1. This is better than
+        # the alternative of R={0,1,3} which has a cost of 11.
+        self.assertIsNotNone(R)
+        self.assertEqual(R, {0, 1})
+        self.assertAlmostEqual(cost, 1)
+        self.assertIn(3, assignment.get(0))
+        self.assertIn(3, assignment.get(1))
+
 
 '''
     def test_downstream_impact_heuristic(self):
@@ -414,53 +461,6 @@ class TestFunctionMerging(unittest.TestCase):
         candidates, _ = select_downstream_candidate_roots(G, root, num_candidates=1, M=M, C=C, N=N, beta=0.3, gamma=0.35, delta=0.35)
         self.assertEqual(len(candidates), 1)
         self.assertIn(1, candidates)
-
-
-
-    def test_forced_cloning_by_async_penalty(self):
-        """
-        Tests a scenario where an async penalty makes one merge path infeasible,
-        forcing the algorithm to clone a shared function.
-        """
-        print("\n--- Running Cloning Test: Forced Cloning by Async Penalty ---")
-        nodes = {
-            0: {'m': 10, 'c': 10}, # Root
-            1: {'m': 10, 'c': 10}, # Path 1
-            2: {'m': 10, 'c': 10}, # Path 2
-            3: {'m': 5, 'c': 5}   # Shared function
-        }
-        edges = [
-            (0, 1, {'weight': 1, 'type': 'sync'}),
-            (0, 2, {'weight': 100, 'type': 'sync'}), # Expensive to cut this edge
-            (1, 3, {'weight': 5, 'type': 'async'}),  # Async call, alpha = ceil(5/2) = 3
-            (2, 3, {'weight': 5, 'type': 'sync'})    # Sync call
-        ]
-        G = self._create_graph(nodes, edges)
-
-        # Let's analyze resource usage for potential subgraphs containing node 3.
-        # Subgraph {2,3} (sync call): mem = 10 + 5 = 15. Feasible.
-        # Subgraph {1,3} (async call): peak mem = 10 + 5 + penalty = 15 + 5 * (3-1) = 25.
-        
-        # Set capacity to make both merge paths feasible if cloned.
-        M, C, N = 25, 25, 2
-        max_k = 3
-
-        root, all_nodes, preds, reach = preprocess_graph(G)
-        cost, R, assignment, _ = run_root_selection_strategy(
-            "Optimal", G, M, C, N, root, all_nodes, preds, reach, max_k
-        )
-
-        # With M=25, the optimal solution is to clone node 3.
-        # This requires roots R={0, 1}.
-        # Assignment: G0={0,2,3} (mem=10+10+5=25 <= 25). Feasible.
-        #             G1={1,3} (peak mem=10+5+5*(3-1)=25 <= 25). Feasible.
-        # The only cross-edge is (0,1), for a cost of 1. This is better than
-        # the alternative of R={0,1,3} which has a cost of 11.
-        self.assertIsNotNone(R)
-        self.assertEqual(R, {0, 1})
-        self.assertAlmostEqual(cost, 1)
-        self.assertEqual(assignment.get((3, 0)), 1)
-        self.assertEqual(assignment.get((3, 1)), 1)
 
     @patch('downstream_impact.random.choice')
     def test_grasp_retry_mechanism(self, mock_random_choice):
