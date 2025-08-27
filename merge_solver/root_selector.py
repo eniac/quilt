@@ -23,7 +23,6 @@ from concurrent.futures import ProcessPoolExecutor
 worker_graph = None
 worker_M = 0
 worker_C = 0
-worker_N = 0
 worker_all_nodes = []
 worker_predecessors = {}
 worker_full_reachable_from = {}
@@ -31,18 +30,17 @@ worker_ilp_time_limit = None
 worker_ilp_mip_gap = 0.0
 worker_ilp_mip_focus = 0
 
-def init_worker(graph, M, C, N, all_nodes, predecessors, full_reachable_from, ilp_time_limit, ilp_mip_gap, ilp_mip_focus):
+def init_worker(graph, M, C, all_nodes, predecessors, full_reachable_from, ilp_time_limit, ilp_mip_gap, ilp_mip_focus):
     """
     Initializer function for each worker process in the ProcessPoolExecutor.
     It sets the global variables for the worker's lifetime. Pruning is always enabled.
     """
-    global worker_graph, worker_M, worker_C, worker_N, worker_all_nodes, worker_predecessors, worker_full_reachable_from
+    global worker_graph, worker_M, worker_C, worker_all_nodes, worker_predecessors, worker_full_reachable_from
     global worker_ilp_time_limit, worker_ilp_mip_gap, worker_ilp_mip_focus
 
     worker_graph = graph
     worker_M = M
     worker_C = C
-    worker_N = N
     worker_all_nodes = all_nodes
     worker_predecessors = predecessors
     worker_full_reachable_from = full_reachable_from
@@ -99,7 +97,7 @@ def evaluate_r_tuple_worker(r_tuple):
     """
     # run the full ILP solver.
     status, cost, assignment = solve_subgraph_construction(
-        worker_graph, set(r_tuple), worker_M, worker_C, worker_N,
+        worker_graph, set(r_tuple), worker_M, worker_C, 
         worker_all_nodes, worker_predecessors, worker_full_reachable_from,
         time_limit=worker_ilp_time_limit, mip_gap=worker_ilp_mip_gap,
         mip_focus=worker_ilp_mip_focus, num_threads=1 # Each worker is single-threaded
@@ -108,7 +106,7 @@ def evaluate_r_tuple_worker(r_tuple):
 
 def run_root_selection_strategy(
     strategy_name: str,
-    graph: nx.DiGraph, M: float, C: float, N: int,
+    graph: nx.DiGraph, M: float, C: float,
     root_node, all_nodes: list, predecessors: dict, full_reachable_from: dict,
     max_k: int,
     candidate_selector_fn=None,
@@ -126,7 +124,7 @@ def run_root_selection_strategy(
 
     Args:
         strategy_name (str): The name for logging purposes (e.g., "Optimal", "Downstream Impact").
-        graph, M, C, N: The graph and resource constraints.
+        graph, M, C: The graph and resource constraints.
         root_node, all_nodes, predecessors, full_reachable_from: Pre-processed graph data.
         max_k (int): The maximum number of subgraphs (roots) to consider.
         candidate_selector_fn: The function to use for selecting a pool of promising root candidates
@@ -192,7 +190,7 @@ def run_root_selection_strategy(
                     else: break
 
                 status, cost, assignment = solve_subgraph_construction(
-                    graph, full_heuristic_R_set, M, C, N, all_nodes, predecessors, full_reachable_from,
+                    graph, full_heuristic_R_set, M, C, all_nodes, predecessors, full_reachable_from,
                     time_limit=ilp_time_limit, mip_gap=ilp_mip_gap, mip_focus=ilp_mip_focus, num_threads=num_threads
                 )
 
@@ -220,7 +218,7 @@ def run_root_selection_strategy(
         return None, None, None, False
 
     # --- Explicit Strategy Execution ---
-    initargs = (graph, M, C, N, all_nodes, predecessors, full_reachable_from, ilp_time_limit, ilp_mip_gap, ilp_mip_focus)
+    initargs = (graph, M, C, all_nodes, predecessors, full_reachable_from, ilp_time_limit, ilp_mip_gap, ilp_mip_focus)
 
     if strategy_mode == 'greedy_refine':
         print(f"\n[{strategy_name}] Running in 'greedy_refine' mode.")
@@ -243,7 +241,7 @@ def run_root_selection_strategy(
                 temp_R = best_R - {root_to_remove}
 
                 status, cost, assignment = solve_subgraph_construction(
-                    graph, temp_R, M, C, N, all_nodes, predecessors, full_reachable_from,
+                    graph, temp_R, M, C, all_nodes, predecessors, full_reachable_from,
                     time_limit=ilp_time_limit, mip_gap=ilp_mip_gap, mip_focus=ilp_mip_focus, num_threads=num_threads
                 )
 

@@ -6,7 +6,7 @@ import math
 # A small constant to prevent division-by-zero errors in floating-point calculations.
 EPSILON = 1e-9
 
-def solve_subgraph_construction(graph, R_set, M, C, N, all_nodes, predecessors, full_reachable_from,
+def solve_subgraph_construction(graph, R_set, M, C, all_nodes, predecessors, full_reachable_from,
                                 time_limit=None, mip_gap=0.0, mip_focus=0, num_threads=1):
     """
     Solves the subgraph construction problem for a given set of candidate roots (R_set)
@@ -22,8 +22,6 @@ def solve_subgraph_construction(graph, R_set, M, C, N, all_nodes, predecessors, 
         R_set (set): The set of nodes chosen to be roots of the subgraphs.
         M (float): The maximum memory capacity per container.
         C (float): The maximum CPU capacity per container.
-        N (int): The total number of times the workflow was invoked (no longer used in constraints,
-                 as alpha is pre-calculated, but kept for API consistency).
         all_nodes (list): A list of all nodes in the graph.
         predecessors (dict): A mapping of each node to its predecessors.
         full_reachable_from (dict): A mapping showing which nodes are reachable from any other node.

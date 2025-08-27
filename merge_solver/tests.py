@@ -21,7 +21,7 @@ class TestFunctionMerging(unittest.TestCase):
                 attrs['type'] = 'sync'
             # If alpha is not explicitly defined, assume it's equal to the weight.
             if 'alpha' not in attrs:
-                attrs['alpha'] = attrs.get('weight', 1)
+                attrs['alpha'] = 1
             G.add_edge(u, v, **attrs)
         return G
 
@@ -55,9 +55,9 @@ class TestFunctionMerging(unittest.TestCase):
         edges = [(0, 1, {'weight': 100}), (1, 2, {'weight': 100})]
         G = self._create_graph(nodes, edges)
 
-        M, C, N = 15, 15, 1
+        M, C = 15, 15
         root, all_nodes, preds, reach = preprocess_graph(G)
-        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, N, root, all_nodes, preds, reach, max_k=3)
+        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=3)
         self.assertEqual(len(R), 3)
         self.assertEqual(cost, 200)
 
@@ -66,46 +66,43 @@ class TestFunctionMerging(unittest.TestCase):
         nodes = {0: {'m': 5, 'c': 5}, 1: {'m': 5, 'c': 5}}
         edges = [(0, 1, {'weight': 1})]
         G = self._create_graph(nodes, edges)
-        M, C, N = 10, 10, 1
+        M, C  = 10, 10
         root, all_nodes, preds, reach = preprocess_graph(G)
-        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, N, root, all_nodes, preds, reach, max_k=2)
+        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=2)
         self.assertEqual(len(R), 1)
         self.assertEqual(cost, 0)
 
-    def test_merge_two_nodes_high_weight(self):
+    def test_merge_two_nodes_high_alpha(self):
         print("\n--- Running Test: Merge Two Nodes ---")
         nodes = {0: {'m': 5, 'c': 5}, 1: {'m': 5, 'c': 5}}
-        edges = [(0, 1, {'weight': 100})]
+        edges = [(0, 1, {'weight': 100, 'alpha': 100})]
         G = self._create_graph(nodes, edges)
-        M, C, N = 10, 10, 1
+        M, C = 10, 10
         root, all_nodes, preds, reach = preprocess_graph(G)
-        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, N, root, all_nodes, preds, reach, max_k=2)
+        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=2)
         self.assertEqual(len(R), 2)
         self.assertEqual(cost, 100)
 
     def test_diamond_graph_merge(self):
         print("\n--- Running Test: Diamond Graph Merge ---")
         nodes = {0: {'m': 10, 'c': 10}, 1: {'m': 10, 'c': 10}, 2: {'m': 10, 'c': 10}, 3: {'m': 10, 'c': 10}}
-        edges = [(0, 1, {'weight': 100, 'alpha':1},), (0, 2, {'weight': 1, 'alpha':1}), (1, 3, {'weight': 100, 'alpha': 1}), (2, 3, {'weight': 1, 'alpha': 1})]
+        edges = [(0, 1, {'weight': 100},), (0, 2, {'weight': 1}), (1, 3, {'weight': 100}), (2, 3, {'weight': 1})]
         G = self._create_graph(nodes, edges)
         root, all_nodes, preds, reach = preprocess_graph(G)
-        N = 1
         M, C = 25, 25
-        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, N, root, all_nodes, preds, reach, max_k=3)
+        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=3)
         self.assertEqual(len(R), 3)
         self.assertAlmostEqual(cost, 101)
         self.assertEqual(R, {0, 1, 2})
 
-'''
-
     def test_profitable_merge(self):
         print("\n--- Running Test: Profitable Merge ---")
         nodes = {0: {'m': 5, 'c': 5}, 1: {'m': 5, 'c': 5}, 2: {'m': 5, 'c': 5}}
-        edges = [(0, 1, {'weight': 10}), (0, 2, {'weight': 1000})]
+        edges = [(0, 1, {'weight': 10 }), (0, 2, {'weight': 1000 })]
         G = self._create_graph(nodes, edges)
-        M, C, N = 15, 15, 1
+        M, C  = 15, 15
         root, all_nodes, preds, reach = preprocess_graph(G)
-        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, N, root, all_nodes, preds, reach, max_k=3)
+        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=3)
         self.assertEqual(len(R), 1)
         self.assertEqual(cost, 0)
 
@@ -114,9 +111,9 @@ class TestFunctionMerging(unittest.TestCase):
         nodes = {0: {'m': 20, 'c': 20}, 1: {'m': 20, 'c': 20}}
         edges = [(0, 1, {'weight': 1000})]
         G = self._create_graph(nodes, edges)
-        M, C, N = 30, 30, 1
+        M, C  = 30, 30
         root, all_nodes, preds, reach = preprocess_graph(G)
-        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, N, root, all_nodes, preds, reach, max_k=2)
+        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=2)
         self.assertEqual(len(R), 2)
         self.assertEqual(cost, 1000)
 
@@ -125,33 +122,20 @@ class TestFunctionMerging(unittest.TestCase):
         nodes = {0: {'m': 1, 'c': 1}, 1: {'m': 20, 'c': 20}, 2: {'m': 20, 'c': 20}, 3: {'m': 1, 'c': 1}}
         edges = [(0, 1, {'weight': 5}), (0, 2, {'weight': 5}), (1, 3, {'weight': 100}), (2, 3, {'weight': 100})]
         G = self._create_graph(nodes, edges)
-        M, C, N = 25, 25, 1
+        M, C = 25, 25
         root, all_nodes, preds, reach = preprocess_graph(G)
-        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, N, root, all_nodes, preds, reach, max_k=3)
+        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=3)
         self.assertEqual(len(R), 2)
         self.assertAlmostEqual(cost, 5)
 
-    def test_downstream_impact_heuristic(self):
-        print("\n--- Running Test: Downstream Impact Heuristic ---")
-        nodes = {0: {'m': 5, 'c': 5}, 1: {'m': 5, 'c': 5}, 2: {'m': 50, 'c': 50}, 3: {'m': 50, 'c': 50}, 4: {'m': 5, 'c': 5}}
-        edges = [(0, 1, {'weight': 10}), (1, 2, {'weight': 10}), (1, 3, {'weight': 10}), (0, 4, {'weight': 100})]
-        G = self._create_graph(nodes, edges)
-        M, C, N = 60, 60, 1
-        root = find_root(G)
-        # Unpack the tuple returned by the selector function
-        candidates, _ = select_downstream_candidate_roots(G, root, num_candidates=1, M=M, C=C, N=N, beta=0.3, gamma=0.35, delta=0.35)
-        self.assertEqual(len(candidates), 1)
-        self.assertIn(1, candidates)
-
-
-    def test_async_prevents_merge(self):
-        print("\n--- Running Async Test: Async Prevents Merge ---")
+    def test_alpha_prevents_merge(self):
+        print("\n--- Running Async Test: Alpha Prevents Merge ---")
         nodes = {0: {'m': 10, 'c': 10}, 1: {'m': 10, 'c': 10}}
-        edges = [(0, 1, {'weight': 10, 'type': 'async'})]
+        edges = [(0, 1, {'weight': 10, 'alpha': 2})]
         G = self._create_graph(nodes, edges)
-        M, C, N = 25, 25, 5
+        M, C = 25, 25
         root, all_nodes, preds, reach = preprocess_graph(G)
-        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, N, root, all_nodes, preds, reach, max_k=2)
+        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=2)
         self.assertIsNotNone(R)
         self.assertEqual(len(R), 2)
         self.assertEqual(cost, 10)
@@ -160,14 +144,17 @@ class TestFunctionMerging(unittest.TestCase):
     def test_async_merge_is_possible(self):
         print("\n--- Running Async Test: Async Merge Possible ---")
         nodes = {0: {'m': 10, 'c': 10}, 1: {'m': 10, 'c': 10}}
-        edges = [(0, 1, {'weight': 10, 'type': 'async'})]
+        edges = [(0, 1, {'weight': 10, 'type': 'async', 'alpha': 2})]
         G = self._create_graph(nodes, edges)
-        M, C, N = 35, 35, 5
+        M, C = 35, 35
         root, all_nodes, preds, reach = preprocess_graph(G)
-        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, N, root, all_nodes, preds, reach, max_k=1)
+        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=1)
         self.assertIsNotNone(R)
         self.assertEqual(len(R), 1)
         self.assertEqual(cost, 0)
+
+
+'''
 
     def test_async_forces_choice(self):
         print("\n--- Running Async Test: Async Forces Choice ---")
@@ -183,6 +170,22 @@ class TestFunctionMerging(unittest.TestCase):
         self.assertEqual(len(R), 2)
         self.assertEqual(R, {0, 2})
         self.assertAlmostEqual(cost, 20)
+
+
+
+    def test_downstream_impact_heuristic(self):
+        print("\n--- Running Test: Downstream Impact Heuristic ---")
+        nodes = {0: {'m': 5, 'c': 5}, 1: {'m': 5, 'c': 5}, 2: {'m': 50, 'c': 50}, 3: {'m': 50, 'c': 50}, 4: {'m': 5, 'c': 5}}
+        edges = [(0, 1, {'weight': 10}), (1, 2, {'weight': 10}), (1, 3, {'weight': 10}), (0, 4, {'weight': 100})]
+        G = self._create_graph(nodes, edges)
+        M, C, N = 60, 60, 1
+        root = find_root(G)
+        # Unpack the tuple returned by the selector function
+        candidates, _ = select_downstream_candidate_roots(G, root, num_candidates=1, M=M, C=C, N=N, beta=0.3, gamma=0.35, delta=0.35)
+        self.assertEqual(len(candidates), 1)
+        self.assertIn(1, candidates)
+
+
 
     def test_profitable_cloning_simple(self):
         """
