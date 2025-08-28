@@ -25,6 +25,28 @@ class TestFunctionMerging(unittest.TestCase):
             G.add_edge(u, v, **attrs)
         return G
 
+    def _run_and_assert_solution(self, G, R_set, M, C, expected_cost, expected_assignment, time_limit=2):
+        """Helper to run the ILP and assert the results."""
+        # The preprocess_graph function likely now returns the root as well.
+        # This unpacks 4 values and removes the need for a separate find_root call.
+        root, all_nodes, predecessors, full_reachable_from = preprocess_graph(G)
+        
+        status, cost, assignment = solve_subgraph_construction(
+            graph=G, R_set=R_set, M=M, C=C, all_nodes=all_nodes,
+            predecessors=predecessors, full_reachable_from=full_reachable_from,
+            time_limit=time_limit
+        )
+
+        self.assertIsNotNone(cost, "ILP failed to find a solution.")
+        self.assertAlmostEqual(expected_cost, cost, places=4)
+        
+        # Normalize the assignment for comparison by sorting nodes within each subgraph
+        normalized_assignment = {r: sorted(list(nodes)) for r, nodes in assignment.items()}
+        self.assertDictEqual(expected_assignment, normalized_assignment)
+        return cost, assignment
+
+ 
+
     def _calculate_subgraph_cost(self, graph, root_node, nodes_in_subgraph):
         """
         Helper function to calculate the exact resource cost of a given subgraph
@@ -680,6 +702,275 @@ class TestFunctionMerging(unittest.TestCase):
 
         self.assertEqual(len(candidates), 1)
         self.assertIn(3, candidates)
+
+    def test_simple_chain(self):
+        """Tests a simple linear chain of nodes that should all be merged."""
+        print("\n--- Running Test: Simple Chain ---")
+        nodes = {i: {'m': 10, 'c': 10} for i in range(4)}
+        edges = [(i, i + 1, {'weight': 10}) for i in range(3)]
+        G = self._create_graph(nodes, edges)
+        
+        # With ample resources, everything should be merged into one subgraph.
+        self._run_and_assert_solution(
+            G, R_set={0}, M=100, C=100,
+            expected_cost=0,
+            expected_assignment={0: [0, 1, 2, 3]}
+        )
+
+    def test_resource_constraint_force_cut(self):
+        """Tests that a tight memory constraint forces a cut."""
+        print("\n--- Running Test: Resource Constraint Cut ---")
+        nodes = {i: {'m': 10, 'c': 10} for i in range(4)}
+        edges = [(i, i + 1, {'weight': 10}) for i in range(3)]
+        G = self._create_graph(nodes, edges)
+
+        # Memory limit of 25 can only accommodate nodes 0 and 1 (10+10=20).
+        # It must cut the edge (1, 2) with weight 10.
+        self._run_and_assert_solution(
+            G, R_set={0, 2}, M=25, C=100,
+            expected_cost=10,
+            expected_assignment={0: [0, 1], 2: [2, 3]}
+        )
+
+    def test_diamond_graph(self):
+        """Tests a diamond shape, specifically the non-disjoint (cloning) behavior."""
+        print("\n--- Running Test: Diamond Graph (Corrected for Cloning) ---")
+        nodes = {i: {'m': 10, 'c': 10} for i in range(4)}
+        edges = [
+            (0, 1, {'weight': 20}),
+            (0, 2, {'weight': 5}),
+            (1, 3, {'weight': 20}),
+            (2, 3, {'weight': 5})
+        ]
+        G = self._create_graph(nodes, edges)
+
+        # With only one root, everything must be merged.
+        self._run_and_assert_solution(
+            G, R_set={0}, M=100, C=100,
+            expected_cost=0,
+            expected_assignment={0: [0, 1, 2, 3]}
+        )
+        
+        # With roots {0, 2} and ample resources, the optimal solution is to
+        # put everything in the subgraph of the main root (0) to achieve a cost of 0.
+        # The subgraph for root 2 must contain 2 (by rule) and its descendant 3.
+        self._run_and_assert_solution(
+            G, R_set={0, 2}, M=100, C=100,
+            expected_cost=0,
+            expected_assignment={0: [0, 1, 2, 3], 2: [2, 3]}
+        )
+
+    def test_async_penalty(self):
+        """Tests the additional resource penalty for merged asynchronous calls."""
+        print("\n--- Running Test: Async Penalty ---")
+        nodes = {0: {'m': 10, 'c': 10}, 1: {'m': 10, 'c': 10}}
+        # Async edge with alpha=5, weight=45. This is valid (e.g., if N=10, ceil(45/10)=5).
+        # If merged, memory becomes 10 + 10 + (5-1)*10 = 60.
+        edges = [(0, 1, {'weight': 45, 'type': 'async', 'alpha': 5})]
+        G = self._create_graph(nodes, edges)
+
+        # With M=50, the async penalty is too high, forcing a cut.
+        self._run_and_assert_solution(
+            G, R_set={0, 1}, M=50, C=100,
+            expected_cost=45,
+            expected_assignment={0: [0], 1: [1]}
+        )
+        
+        # With M=60, merging is possible and cheaper than cutting.
+        self._run_and_assert_solution(
+            G, R_set={0}, M=60, C=100,
+            expected_cost=0,
+            expected_assignment={0: [0, 1]}
+        )
+
+    def test_bridge_graph_choke_point(self):
+        """
+        Tests a 'bridge' or 'choke point' graph.
+        Structure: A root cluster (0,1,2) connects to a downstream cluster (4,5)
+        only through a single bridge node (3).
+        The ILP should merge everything if resources allow, but if not, the bridge
+        node (3) is the most logical place to start a new subgraph.
+        """
+        print("\n--- Running Corner Case Test: Bridge/Choke Point ---")
+        nodes = {i: {'m': 10, 'c': 10} for i in range(6)}
+        edges = [
+            (0, 1, {'weight': 5}), (0, 2, {'weight': 5}),
+            (1, 3, {'weight': 10}), (2, 3, {'weight': 10}), # Edges leading to the bridge
+            (3, 4, {'weight': 5}), (3, 5, {'weight': 5})
+        ]
+        G = self._create_graph(nodes, edges)
+
+        # Case 1: Ample resources. Everything should be merged.
+        self._run_and_assert_solution(
+            G, R_set={0}, M=100, C=100,
+            expected_cost=0,
+            expected_assignment={0: [0, 1, 2, 3, 4, 5]}
+        )
+
+        # Case 2: Tight resources. Memory limit of 45 allows for {0,1,2,3} (40)
+        # but not the whole graph. The best cut is to make the bridge (3) a new root.
+        # This cuts edges (1,3) and (2,3) for a total cost of 20.
+        self._run_and_assert_solution(
+            G, R_set={0, 3}, M=45, C=100,
+            expected_cost=20,
+            expected_assignment={0: [0, 1, 2], 3: [3, 4, 5]}
+        )
+
+    def test_fan_in_resource_contention(self):
+        """
+        Tests a 'fan-in' graph where multiple parallel chains converge on one node.
+        Structure: Root (0) fans out to three chains (1->4, 2->5, 3->6), which all
+        converge on a final, resource-heavy node (7).
+        This creates resource contention at the merge point, forcing the ILP to be
+        selective about which chains to merge with the final node.
+        """
+        print("\n--- Running Corner Case Test: Fan-In Contention ---")
+        nodes = {
+            0: {'m': 5, 'c': 5}, 1: {'m': 10, 'c': 10}, 2: {'m': 10, 'c': 10}, 3: {'m': 10, 'c': 10},
+            4: {'m': 10, 'c': 10}, 5: {'m': 10, 'c': 10}, 6: {'m': 10, 'c': 10},
+            7: {'m': 20, 'c': 20} # Resource-heavy final node
+        }
+        edges = [
+            (0, 1, {'weight': 1}), (0, 2, {'weight': 1}), (0, 3, {'weight': 1}),
+            (1, 4, {'weight': 1}), (2, 5, {'weight': 1}), (3, 6, {'weight': 1}),
+            (4, 7, {'weight': 10}), # Low-cost path
+            (5, 7, {'weight': 20}), # Medium-cost path
+            (6, 7, {'weight': 30})  # High-cost path
+        ]
+        G = self._create_graph(nodes, edges)
+
+        self._run_and_assert_solution(
+            G, R_set={0, 7}, M=70, C=100,
+            expected_cost=60,
+            expected_assignment={0: [0, 1, 2, 3, 4, 5, 6], 7: [7]}
+        )
+
+    def test_async_resource_trap_corrected(self):
+        """
+        Tests a scenario where an async edge acts as a resource trap, using a
+        valid alpha value (alpha <= weight).
+        Structure: A simple chain 0 -> 1 -> 2.
+        The edge (0,1) has a moderate weight but its async penalty makes it
+        impossible to merge under the given memory constraint.
+        """
+        print("\n--- Running Corner Case Test: Async Resource Trap (Corrected) ---")
+        nodes = {
+            0: {'m': 10, 'c': 10},
+            1: {'m': 30, 'c': 30},
+            2: {'m': 10, 'c': 10}
+        }
+        edges = [
+            # This edge has weight 45. With N=10, alpha=ceil(45/10)=5. alpha <= weight.
+            # Merging it costs: m_0 + m_1 + (alpha-1)*m_1 = 10 + 30 + (5-1)*30 = 40 + 120 = 160
+            (0, 1, {'weight': 45, 'type': 'async', 'alpha': 5}),
+            # This edge is more expensive to cut, but has no async penalty.
+            (1, 2, {'weight': 50, 'type': 'sync'})
+        ]
+        G = self._create_graph(nodes, edges)
+
+        # Memory limit is 150. The async penalty of 160 makes merging (0,1) impossible.
+        # The ILP must cut the edge (0,1) to satisfy constraints, at a cost of 45.
+        self._run_and_assert_solution(
+            G, R_set={0, 1}, M=150, C=150,
+            expected_cost=45,
+            expected_assignment={0: [0], 1: [1, 2]}
+        )
+
+    def test_heavy_side_branch(self):
+        """
+        Tests a long chain with a resource-heavy side-branch.
+        Structure: A main chain 0->1->2->3. Node 1 has a branch 1->4->5.
+        Nodes 4 and 5 are extremely memory-heavy.
+        The ILP should choose to isolate the heavy branch by creating a new root
+        at the branch point (4), thereby cutting edge (1,4).
+        """
+        print("\n--- Running Corner Case Test: Heavy Side Branch ---")
+        nodes = {
+            0: {'m': 10, 'c': 10}, 1: {'m': 10, 'c': 10}, 2: {'m': 10, 'c': 10}, 3: {'m': 10, 'c': 10},
+            4: {'m': 50, 'c': 50}, # Heavy node 1
+            5: {'m': 50, 'c': 50}  # Heavy node 2
+        }
+        edges = [
+            (0, 1, {'weight': 5}), (1, 2, {'weight': 5}), (2, 3, {'weight': 5}), # Main chain
+            (1, 4, {'weight': 20}), # Edge to side branch
+            (4, 5, {'weight': 5})
+        ]
+        G = self._create_graph(nodes, edges)
+
+        # Memory limit of 120.
+        # Merging everything: 4*10 + 2*50 = 140. Impossible.
+        # Merging the main chain {0,1,2,3} costs 40.
+        # Merging the side branch {4,5} costs 100.
+        # The optimal solution is to cut the edge (1,4) at a cost of 20.
+        self._run_and_assert_solution(
+            G, R_set={0, 4}, M=120, C=120,
+            expected_cost=20,
+            expected_assignment={0: [0, 1, 2, 3], 4: [4, 5]}
+        )
+
+    def test_reconverging_side_chain_with_cut(self):
+        """
+        Tests a graph with a side-chain that re-converges with the main path.
+        Structure: 0 -> 1 -> 4 and 0 -> 2 -> 3 -> 4. Node 4 is the re-convergence point.
+        A resource constraint will force a cut on the side-chain (e.g., at node 2).
+        This should force node 4 to be cloned.
+        """
+        print("\\n--- Running Corner Case Test: Re-converging Side-Chain ---")
+        nodes = {i: {'m': 10, 'c': 10} for i in range(5)}
+        # Make node 2 slightly more expensive to encourage a cut there.
+        nodes[2]['m'] = 25 
+        edges = [
+            (0, 1, {'weight': 5}), (1, 4, {'weight': 5}), # Main path
+            (0, 2, {'weight': 10}), (2, 3, {'weight': 5}), (3, 4, {'weight': 5}) # Side-chain
+        ]
+        G = self._create_graph(nodes, edges)
+
+        # Memory limit of 50.
+        # Merging everything costs: 10+10+25+10+10 = 65. Impossible.
+        # The solver should choose to make node 2 a new root, cutting the (0,2) edge (cost=10).
+        # Subgraph 0: Must contain {0, 1, 4} to be valid. Cost = 30.
+        # Subgraph 2: Must contain {2, 3, 4} to be valid. Cost = 45.
+        # Node 4 must be cloned into both subgraphs.
+        self._run_and_assert_solution(
+            G, R_set={0, 2}, M=50, C=100,
+            expected_cost=10,
+            expected_assignment={0: [0, 1, 4], 2: [2, 3, 4]}
+        )
+
+
+    def test_overlapping_async_paths_resource_pressure(self):
+        """
+        Tests the resource model with overlapping async paths, based on the user's example.
+        Structure: 0->1 (async), 0->2 (async), 1->3 (sync), 2->3 (sync).
+        This creates two parallel execution paths that converge on node 3.
+        The memory/CPU for node 3 should be counted for each path.
+        """
+        print("\\n--- Running Corner Case Test: Overlapping Async Paths ---")
+        nodes = {
+            0: {'m': 10, 'c': 10}, 
+            1: {'m': 10, 'c': 10}, 
+            2: {'m': 10, 'c': 10},
+            # Make node 3 heavy enough that double-counting exceeds the limit.
+            3: {'m': 45, 'c': 45} 
+        }
+        edges = [
+            (0, 1, {'weight': 5, 'type': 'async', 'alpha': 1}),
+            (0, 2, {'weight': 5, 'type': 'async', 'alpha': 1}),
+            (1, 3, {'weight': 20}), # Make this edge more expensive to cut
+            (2, 3, {'weight': 5})   # Make this edge cheaper to cut
+        ]
+        G = self._create_graph(nodes, edges)
+
+        # Memory limit M=100.
+        # Merging everything would cost 110 in memory, which is impossible.
+        # To satisfy the resource constraints, the solver must isolate node 3
+        # by cutting both of its incoming edges.
+        # The total cost is weight(1,3) + weight(2,3) = 20 + 5 = 25.
+        self._run_and_assert_solution(
+            G, R_set={0, 3}, M=100, C=100,
+            expected_cost=25,
+            expected_assignment={0: [0, 1, 2], 3: [3]}
+        )
 
 
 if __name__ == '__main__':
