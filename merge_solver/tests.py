@@ -449,16 +449,15 @@ class TestFunctionMerging(unittest.TestCase):
         self.assertIn(3, assignment.get(1))
 
 
-'''
     def test_downstream_impact_heuristic(self):
         print("\n--- Running Test: Downstream Impact Heuristic ---")
         nodes = {0: {'m': 5, 'c': 5}, 1: {'m': 5, 'c': 5}, 2: {'m': 50, 'c': 50}, 3: {'m': 50, 'c': 50}, 4: {'m': 5, 'c': 5}}
         edges = [(0, 1, {'weight': 10}), (1, 2, {'weight': 10}), (1, 3, {'weight': 10}), (0, 4, {'weight': 100})]
         G = self._create_graph(nodes, edges)
-        M, C, N = 60, 60, 1
+        M, C = 60, 60
         root = find_root(G)
         # Unpack the tuple returned by the selector function
-        candidates, _ = select_downstream_candidate_roots(G, root, num_candidates=1, M=M, C=C, N=N, beta=0.3, gamma=0.35, delta=0.35)
+        candidates, _ = select_downstream_candidate_roots(G, root, num_candidates=1, M=M, C=C, beta=0.3, gamma=0.35, delta=0.35)
         self.assertEqual(len(candidates), 1)
         self.assertIn(1, candidates)
 
@@ -469,7 +468,7 @@ class TestFunctionMerging(unittest.TestCase):
         candidate set.
         """
         print("\n--- Running GRASP Test: Retry Mechanism ---")
-        
+
         # --- Graph Design ---
         # A deterministic selection would pick node 1, creating a "forced group" {2,3}
         # in the non-root subgraph that is too large (40+40 > 50), making it provably infeasible.
@@ -486,12 +485,12 @@ class TestFunctionMerging(unittest.TestCase):
             (0, 1, {'weight': 100}), # High weight to make node 1 attractive
             (0, 2, {'weight': 99}),  # Slightly lower weight for node 2
             (0, 3, {'weight': 1}),   # Make sure 3 is reachable
-            (3, 2, {'weight': 1}), 
+            (3, 2, {'weight': 1}),
             (0, 4, {'weight': 1})
         ]
         G = self._create_graph(nodes, edges)
-        M, C, N = 50, 50, 1
-        
+        M, C = 50, 50
+
         # --- Mocking Random Choice ---
         # The retry logic increments the number of candidates to select on each attempt.
         # Attempt 1 (num_candidates=1): calls random.choice once. We make it choose the bad candidate (1).
@@ -505,19 +504,19 @@ class TestFunctionMerging(unittest.TestCase):
 
         # --- Execution ---
         root, all_nodes, preds, reach = preprocess_graph(G)
-        
+
         ds_args = {
-            'num_candidates': 1, 'M': M, 'C': C, 'N': N, 
-            'beta': 0.5, 'gamma': 0.25, 'delta': 0.25, 
+            'num_candidates': 1, 'M': M, 'C': C,
+            'beta': 0.5, 'gamma': 0.25, 'delta': 0.25,
             'rcl_size': 2 # Make RCL big enough to include both 1 and 2
         }
-        
+
         cost, R, assignment, _ = run_root_selection_strategy(
-            "GRASP Test", G, M, C, N, root, all_nodes, preds, reach, 
+            "GRASP Test", G, M, C, root, all_nodes, preds, reach,
             max_k=3,
             candidate_selector_fn=select_downstream_candidate_roots,
             selector_args=ds_args,
-            strategy_mode='combinatorial',
+            strategy_mode='heuristic',
             ilp_time_limit=10.0
         )
 
@@ -528,10 +527,9 @@ class TestFunctionMerging(unittest.TestCase):
         self.assertIsNotNone(cost, "A feasible solution should have been found on retry.")
         self.assertIsNotNone(R)
         self.assertEqual(R, {0, 2})
-        
+
         # We expect 3 calls to random.choice: one for the failed attempt, two for the successful one.
         self.assertEqual(mock_random_choice.call_count, 3, "Expected three attempts from the GRASP selector.")
-
 
     def test_selects_by_high_in_degree(self):
         """
@@ -551,12 +549,12 @@ class TestFunctionMerging(unittest.TestCase):
             (2, 3, {'weight': 1})
         ]
         G = self._create_graph(nodes, edges)
-        
+
         # High beta emphasizes the in-degree score
         candidates, _ = select_downstream_candidate_roots(G, root_node=0, num_candidates=1, 
-                                                        M=200, C=200, N=1, 
+                                                        M=200, C=200,
                                                         beta=0.9, gamma=0.05, delta=0.05)
-        
+
         self.assertEqual(len(candidates), 1)
         self.assertIn(1, candidates)
 
@@ -580,12 +578,12 @@ class TestFunctionMerging(unittest.TestCase):
             (2, 4, {'weight': 1})
         ]
         G = self._create_graph(nodes, edges)
-        
+
         # High gamma emphasizes the downstream memory score
         candidates, _ = select_downstream_candidate_roots(G, root_node=0, num_candidates=1, 
-                                                        M=300, C=300, N=1, 
+                                                        M=300, C=300, 
                                                         beta=0.05, gamma=0.9, delta=0.05)
-        
+
         self.assertEqual(len(candidates), 1)
         self.assertIn(2, candidates)
 
@@ -609,14 +607,15 @@ class TestFunctionMerging(unittest.TestCase):
             (2, 4, {'weight': 1})
         ]
         G = self._create_graph(nodes, edges)
-        
+
         # High delta emphasizes the downstream CPU score
-        candidates, _ = select_downstream_candidate_roots(G, root_node=0, num_candidates=1, 
-                                                        M=300, C=300, N=1, 
+        candidates, _ = select_downstream_candidate_roots(G, root_node=0, num_candidates=1,
+                                                        M=300, C=300,
                                                         beta=0.05, gamma=0.05, delta=0.9)
-        
+
         self.assertEqual(len(candidates), 1)
         self.assertIn(2, candidates)
+
 
     def test_async_penalty_inflates_score(self):
         """
@@ -635,19 +634,20 @@ class TestFunctionMerging(unittest.TestCase):
             (0, 2, {'weight': 100}),
             # This async call from 2 to 3 will add a penalty to 2's downstream cost
             # alpha = ceil(10/2) = 5. Penalty = 20 * (5-1) = 80
-            (2, 3, {'weight': 10, 'type': 'async'}) 
+            (2, 3, {'weight': 10, 'type': 'async', 'alpha': 5}) 
         ]
         G = self._create_graph(nodes, edges)
-        
+
         # With balanced weights, the async penalty should be the deciding factor
-        candidates, _ = select_downstream_candidate_roots(G, root_node=0, num_candidates=1, 
-                                                        M=200, C=200, N=2, 
+        candidates, _ = select_downstream_candidate_roots(G, root_node=0, num_candidates=1,
+                                                        M=200, C=200,
                                                         beta=0.33, gamma=0.33, delta=0.33)
-        
+
         # Node 2 has a much higher downstream cost (10+20+80) than node 1 (10),
         # so it should be selected.
         self.assertEqual(len(candidates), 1)
         self.assertIn(2, candidates)
+
 
     def test_balanced_score_selection(self):
         """
@@ -661,7 +661,7 @@ class TestFunctionMerging(unittest.TestCase):
             2: {'m': 1, 'c': 1},   # Best downstream memory only
             3: {'m': 1, 'c': 1},   # Best balanced score
             4: {'m': 100, 'c': 1}, # Memory-heavy node
-            5: {'m': 1, 'c': 1}
+            5: {'m': 60, 'c': 60}
         }
         edges = [
             (0, 1, {'weight': 200}), # Node 1 is purely an in-degree candidate
@@ -670,20 +670,16 @@ class TestFunctionMerging(unittest.TestCase):
             (0, 3, {'weight': 100}), # Node 3 has decent in-degree...
             (3, 5, {'weight': 1}),   # ...and some downstream impact, making it the best balanced choice.
         ]
-        # Give node 5 some resources to create downstream impact for node 3
+
         G = self._create_graph(nodes, edges)
-        G.nodes[5]['m'] = 50
-        G.nodes[5]['c'] = 50
 
         # Use balanced weights
-        candidates, _ = select_downstream_candidate_roots(G, root_node=0, num_candidates=1, 
-                                                        M=200, C=200, N=1, 
+        candidates, _ = select_downstream_candidate_roots(G, root_node=0, num_candidates=1,
+                                                        M=200, C=200,
                                                         beta=0.33, gamma=0.33, delta=0.33)
-        
+
         self.assertEqual(len(candidates), 1)
         self.assertIn(3, candidates)
-'''
-
 
 
 if __name__ == '__main__':

@@ -138,7 +138,7 @@ def solve_subgraph_construction(graph, R_set, M, C, all_nodes, predecessors, ful
                 return model.status, None, None
 
 
-def print_solution_details(graph, R_set, assignment, M, C, N):
+def print_solution_details(graph, R_set, assignment, M, C):
     """
     Prints a detailed summary of the ILP solution, including the cost, subgraph
     compositions, and their resource usage. It verifies the resource usage of
