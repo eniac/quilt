@@ -75,7 +75,7 @@ def solve_subgraph_construction(graph, R_set, M, C, all_nodes, predecessors, ful
             # Constraint 3: Connectivity. 
             for r in R_set:
                 for i in all_nodes:
-                    if i != r and i in full_reachable_from[r] and predecessors[i]:
+                     if i != r and predecessors[i]:
                         model.addConstr(y[i, r] <= gp.quicksum(y[p, r] for p in predecessors[i]), name=f"conn_{i}_{r}")
 
 
