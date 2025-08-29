@@ -142,7 +142,7 @@ def print_solution_details(graph, R_set, assignment, M, C):
     """
     Prints a detailed summary of the ILP solution, including the cost, subgraph
     compositions, and their resource usage. It verifies the resource usage of
-    each subgraph against the constraints using the CORRECTED formulas.
+    each subgraph against the constraints.
     """
     if not assignment:
         print("No feasible solution found or ILP failed.")

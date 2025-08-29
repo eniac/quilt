@@ -63,6 +63,7 @@ def run_comparison(name, graph, M, C, max_k,
     # --- Strategy 1: Optimal Solution ---
     # This is only run for small graphs (<= 20 nodes) due to its exponential complexity.
     if len(graph) <= 20:
+        print("Running Optimal Solution")
         start_opt = time.time()
         opt_res = run_root_selection_strategy(
             strategy_name="Optimal",
@@ -80,6 +81,8 @@ def run_comparison(name, graph, M, C, max_k,
         results["Optimal"] = (None, 0.0)
 
     # --- Strategy 2: Downstream Impact Heuristic ---
+
+    print("Running Downstream Impact")
     start_ds = time.time()
     ds_args = {
         'num_candidates': num_root_candidates, 'M': M, 'C': C,
@@ -101,6 +104,7 @@ def run_comparison(name, graph, M, C, max_k,
     results["Downstream Impact"] = (ds_res, time.time() - start_ds)
 
     # --- Strategy 3: Weighted In-Degree Heuristic ---
+    print("Running Weighted In-Degree Heuristic")
     start_wd = time.time()
     wd_args = {'num_candidates': num_root_candidates, 'rcl_size': rcl_size}
     wd_res = run_root_selection_strategy(
@@ -188,8 +192,8 @@ def save_results(final_result, filename="merge_decision_result.json"):
 if __name__ == "__main__":
 
     # --- Experiment Configuration ---
-    NUM_TRIALS = 2
-    NUM_NODES = [25, 50, 100, 150, 200]
+    NUM_TRIALS = 1
+    NUM_NODES = [400]
     NUM_THREADS = os.cpu_count()    # Use all available CPU cores for parallel ILP solves
 
     # Parameters of the random graphs
@@ -197,10 +201,10 @@ if __name__ == "__main__":
     ASYNC_PROB = 0.1                # Probability of an edge being asynchronous
     N_INVOCATIONS = 10              # N parameter for async penalty calculation
 
-    CONSTRAINT_FACTOR = 1.2         # The larger this value, the harder the problem. 
+    CONSTRAINT_FACTOR = 1.1         # The larger this value, the harder the problem. 
                                     # Empirically we find that:
                                     # <1.0 = all functions usually fit in 1 container. So it is trivial.
-                                    # 1.2 = this makes the problem challenging but not impossible. Probably
+                                    # 1.1 = this makes the problem challenging but not impossible. Probably
                                     #       the most representative settings since serverless DAGs are not really
                                     #       random rDAGs. They tend to have more structure than random.
                                     # 1.5 = the problem is quite hard for large random graphs so in most cases
@@ -226,7 +230,6 @@ if __name__ == "__main__":
     TIME_LIMIT_OPTIMAL = 180.0      # Time limit for the slow, optimal solver
     TIME_LIMIT_APPROX = 20.0        # Time limit for the faster, heuristic-based ILP solves
     ILP_MIP_GAP_APPROX = 0.30       # Allow heuristic solves to stop if within 30% of the optimal bound
-
 
 
     # --- Experiment Execution ---
