@@ -61,8 +61,8 @@ def run_comparison(name, graph, M, C, max_k,
     results["Baseline"] = ((baseline_cost, set(graph.nodes()), None, False), 0.0)
 
     # --- Strategy 1: Optimal Solution ---
-    # This is only run for small graphs (<= 25 nodes) due to its exponential complexity.
-    if len(graph) <= 25:
+    # This is only run for small graphs (<= 20 nodes) due to its exponential complexity.
+    if len(graph) <= 20:
         start_opt = time.time()
         opt_res = run_root_selection_strategy(
             strategy_name="Optimal",
@@ -76,7 +76,7 @@ def run_comparison(name, graph, M, C, max_k,
         )
         results["Optimal"] = (opt_res, time.time() - start_opt)
     else:
-        print("\n--- Skipping Optimal Solution (graph > 25 nodes) ---")
+        print("\n--- Skipping Optimal Solution (graph > 20 nodes) ---")
         results["Optimal"] = (None, 0.0)
 
     # --- Strategy 2: Downstream Impact Heuristic ---
@@ -189,7 +189,7 @@ if __name__ == "__main__":
 
     # --- Experiment Configuration ---
     NUM_TRIALS = 2
-    NUM_NODES = [5, 10, 15, 20]
+    NUM_NODES = [25, 50, 100, 150, 200]
     NUM_THREADS = os.cpu_count()    # Use all available CPU cores for parallel ILP solves
 
     # Parameters of the random graphs

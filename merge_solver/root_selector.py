@@ -7,6 +7,9 @@ import random
 from ilp import solve_subgraph_construction
 from concurrent.futures import ProcessPoolExecutor
 
+# A small constant to prevent division-by-zero errors.
+EPSILON = 1e-9
+
 # The way the current code works is as follows.
 # There are two modes of operation.
 # Mode (1) is combinatorial (we try all possible combinations of a set of roots).
@@ -36,6 +39,150 @@ def _default_candidate_selector(graph, root_node, **kwargs):
     # Scores are not used in pure combinatorial mode, but we return them for API consistency.
     scores = [(n, 1.0) for n in candidates]
     return candidates, scores
+
+def check_forced_subgraph_feasibility(graph, R_set, M, C):
+    """
+    Performs a heuristic check to prune guaranteed-infeasible root sets.
+
+    For each root `r` in the candidate set `R_set`, it identifies all immediate
+    children of `r` that are NOT in `R_set`. These children are "forced" to be
+    in `r`'s subgraph.
+
+    The function then calculates the resource cost of this minimal "forced"
+    subgraph. If the cost exceeds M or C for ANY root in `R_set`, the entire
+    set is guaranteed to be infeasible, and the function returns False.
+
+    Args:
+        graph (nx.DiGraph): The workflow's call graph.
+        R_set (set): The candidate set of roots to check.
+        M (float): The maximum memory capacity per container.
+        C (float): The maximum CPU capacity per container.
+
+    Returns:
+        bool: False if the root set is guaranteed to be infeasible, True otherwise.
+    """
+    for r in R_set:
+        # A root's own resource cost must not exceed the limits.
+        if graph.nodes[r]['m'] > M or graph.nodes[r]['c'] > C:
+            return False
+
+        # Identify children of `r` that are "forced" into its subgraph because
+        # they are not roots themselves.
+        forced_children = [
+            child for child in graph.successors(r) if child not in R_set
+        ]
+
+        if not forced_children:
+            continue # No forced children, so this root is fine for now.
+
+        # --- Calculate Resource Cost for the Forced Subgraph ---
+        # Start with the cost of the root itself.
+        c_total = graph.nodes[r]['c']
+        m_total = graph.nodes[r]['m']
+
+        # Add costs from the forced children.
+        for v in forced_children:
+            edge_data = graph.edges[r, v]
+            alpha = edge_data.get('alpha', 1.0) # Default alpha to 1 if not specified
+
+            # CPU Calculation
+            c_total += alpha * graph.nodes[v]['c']
+
+            # Memory Calculation
+            m_total += graph.nodes[v]['m']
+            if edge_data.get('type') == 'async':
+                m_total += (alpha - 1) * graph.nodes[v]['m']
+
+        # --- The Pruning Check ---
+        if m_total > M or c_total > C:
+            # If even this minimal, mandatory subgraph is over budget,
+            # the entire root set is infeasible.
+            return False
+
+    # If all roots pass the check, the set is potentially feasible.
+    return True
+
+
+
+def calculate_removability_scores(graph, M, C, assignment, roots_to_score, **kwargs):
+    """
+    Calculates a removability score for each root based on the current ILP assignment.
+
+    This function is designed to be used in the refinement stage to identify the best
+    root to remove. It prioritizes removing roots that have few nodes assigned to them
+    and whose subgraphs have high resource headroom (i.e., are far from violating
+    memory or CPU constraints).
+
+    The score is calculated as:
+        score = (number_of_assigned_nodes) / (resource_headroom + epsilon)
+
+    A lower score is better for removal.
+
+    Args:
+        graph (nx.DiGraph): The workflow's call graph.
+        M (float): The maximum memory capacity per container.
+        C (float): The maximum CPU capacity per container.
+        assignment (dict): The current best assignment from the ILP solver, mapping
+                           each root to a list of nodes in its subgraph.
+        roots_to_score (set): The set of current roots to evaluate.
+        **kwargs: Absorbs any other arguments for API compatibility.
+
+    Returns:
+        A tuple containing:
+        - An empty set (for API compatibility with candidate selectors).
+        - A list of (root, score) tuples.
+    """
+    scores = []
+
+    for r in roots_to_score:
+        nodes_in_subgraph = set(assignment.get(r, []))
+        if not nodes_in_subgraph:
+            # If a root has no nodes, it's a prime candidate for removal.
+            scores.append((r, 0.0))
+            continue
+
+        # --- Calculate Resource Utilization (logic from ilp.py) ---
+        edges_in_subgraph = [
+            (u, v) for u, v in graph.edges()
+            if u in nodes_in_subgraph and v in nodes_in_subgraph
+        ]
+        async_edges_in_subgraph = [
+            (u, v) for u, v, data in graph.edges(data=True)
+            if data.get('type') == 'async' and u in nodes_in_subgraph and v in nodes_in_subgraph
+        ]
+
+        # CPU Calculation
+        c_total = graph.nodes[r]['c'] + sum(
+            graph.edges[u, v]['alpha'] * graph.nodes[v]['c']
+            for u, v in edges_in_subgraph
+        )
+
+        # Memory Calculation
+        m_total = graph.nodes[r]['m'] + sum(
+            graph.nodes[v]['m']
+            for u, v in edges_in_subgraph
+        ) + sum(
+            (graph.edges[u, v]['alpha'] - 1) * graph.nodes[v]['m']
+            for u, v in async_edges_in_subgraph
+        )
+
+        # --- Calculate Score ---
+        mem_util = m_total / (M + EPSILON)
+        cpu_util = c_total / (C + EPSILON)
+
+        # Headroom is near 1 for low utilization, near 0 for high utilization.
+        resource_headroom = (1.0 - mem_util) * (1.0 - cpu_util)
+        num_assigned_nodes = len(nodes_in_subgraph)
+
+        # We add 1 to the numerator to ensure that even roots with a single assigned
+        # node but very high utilization are penalized, preventing them from having
+        # a score near zero.
+        score = (num_assigned_nodes + 1) / (resource_headroom + EPSILON)
+        scores.append((r, score))
+
+    # We don't need to sort here because the caller will sort based on the scores.
+    return set(), scores
+
 
 def init_worker(graph, M, C, all_nodes, predecessors, full_reachable_from, ilp_time_limit, ilp_mip_gap, ilp_mip_focus):
     """
@@ -97,7 +244,7 @@ def run_root_selection_strategy(strategy_name, graph, M, C, root_node, all_nodes
     """
     if selector_args is None:
         selector_args = {}
-    
+
     if candidate_selector_fn is None:
         candidate_selector_fn = _default_candidate_selector
 
@@ -118,13 +265,13 @@ def run_root_selection_strategy(strategy_name, graph, M, C, root_node, all_nodes
             # Get the pool of candidate roots to choose from.
             candidate_pool, _ = candidate_selector_fn(graph, root_node, **selector_args)
             candidate_pool_list = sorted(list(candidate_pool)) # Sort for deterministic combinations
-            
+
             tried_R_configs = set()
 
             for k in range(1, max_k + 1):
                 if not candidate_pool_list and k > 1:
                     break
-                
+
                 num_to_choose = k - 1
                 if num_to_choose < 0 or num_to_choose > len(candidate_pool_list):
                     continue
@@ -163,34 +310,38 @@ def run_root_selection_strategy(strategy_name, graph, M, C, root_node, all_nodes
             print(f"NOTE: Exploration stopped early due to combination threshold.")
 
         return (best_cost, best_R, best_assignment, limit_hit) if best_assignment else (None, None, None, limit_hit)
-    
+
     elif strategy_mode == 'heuristic':
         # --- Heuristic Mode (for large graphs) ---
         # This mode is single-threaded but tells Gurobi to use all available threads.
-        
+
         # Stage 1: Find an initial feasible solution using GRASP.
         best_R = None
         initial_pool_size = 1
-        
+
         while best_R is None and initial_pool_size < len(all_nodes):
             print(f"Attempting to find initial solution with pool size {initial_pool_size}...")
-            
+
             local_selector_args = selector_args.copy()
             local_selector_args['num_candidates'] = initial_pool_size
-            
+
             # Use the heuristic to select a set of candidates.
             result = candidate_selector_fn(graph, root_node, **local_selector_args)
             candidate_pool = result[0] if isinstance(result, tuple) else result
-            
+
             R_initial = {root_node} | candidate_pool
-            
+
+            if not check_forced_subgraph_feasibility(graph, R_initial, M, C):
+                initial_pool_size += 1
+                continue
+
             status, cost, assignment = solve_subgraph_construction(
-                graph=graph, R_set=R_initial, M=M, C=C, all_nodes=all_nodes, 
+                graph=graph, R_set=R_initial, M=M, C=C, all_nodes=all_nodes,
                 predecessors=predecessors, full_reachable_from=full_reachable_from,
                 time_limit=ilp_time_limit, mip_gap=ilp_mip_gap, mip_focus=ilp_mip_focus,
                 num_threads=num_threads
             )
-            
+
             if status not in (gp.GRB.INFEASIBLE, gp.GRB.INF_OR_UNBD) and cost is not None:
                 best_R = R_initial
                 best_cost = cost
@@ -199,7 +350,7 @@ def run_root_selection_strategy(strategy_name, graph, M, C, root_node, all_nodes
                 break
             else:
                 initial_pool_size += 1
-        
+
         if best_R is None:
             print("Could not find an initial feasible solution.")
             return None, None, None, False
@@ -207,32 +358,41 @@ def run_root_selection_strategy(strategy_name, graph, M, C, root_node, all_nodes
         # Stage 2: Greedy refinement.
         while True:
             improvement_found = False
-            
+
             # to prevent it from triggering the random choice selection logic.
             refinement_selector_args = selector_args.copy()
             refinement_selector_args['num_candidates'] = 0 # We only want scores, not new candidates.
 
             # Get DIH scores to identify the least valuable roots.
-            _, all_scores = candidate_selector_fn(graph, root_node, **refinement_selector_args)
-            
+           # _, all_scores = candidate_selector_fn(graph, root_node, **refinement_selector_args)
+            _, all_scores = calculate_removability_scores(
+                graph=graph, M=M, C=C,
+                assignment=best_assignment,
+                roots_to_score=best_R
+            )
+
             removable_roots = sorted(
                 [r for r in best_R if r != root_node],
                 key=lambda r: dict(all_scores).get(r, 0) # Sort by score, ascending
             )
-            
+
             if not removable_roots: break
 
-            for r_to_remove in removable_roots:
+            # Try up to 10 roots to remove
+            for r_to_remove in removable_roots[:10]:
                 R_temp = best_R - {r_to_remove}
-                
+
+                if not check_forced_subgraph_feasibility(graph, R_temp, M, C):
+                    continue
+
                 status, cost, assignment = solve_subgraph_construction(
-                    graph=graph, R_set=R_temp, M=M, C=C, all_nodes=all_nodes, 
+                    graph=graph, R_set=R_temp, M=M, C=C, all_nodes=all_nodes,
                     predecessors=predecessors, full_reachable_from=full_reachable_from,
                     time_limit=ilp_time_limit, mip_gap=ilp_mip_gap, mip_focus=ilp_mip_focus,
                     num_threads=num_threads
                 )
 
-                # CORRECTED LOGIC: Accept new solution if cost is better, OR if cost is the same
+                # Accept new solution if cost is better, OR if cost is the same
                 # but the number of roots is smaller.
                 is_better = (cost is not None and status not in (gp.GRB.INFEASIBLE, gp.GRB.INF_OR_UNBD) and
                             (cost < best_cost or (math.isclose(cost, best_cost) and len(R_temp) < len(best_R))))
@@ -244,7 +404,7 @@ def run_root_selection_strategy(strategy_name, graph, M, C, root_node, all_nodes
                     best_assignment = assignment
                     improvement_found = True
                     break # Restart the refinement process with the new, smaller set.
-            
+
             if not improvement_found:
                 break # No single removal improved the solution, local optimum reached.
 
