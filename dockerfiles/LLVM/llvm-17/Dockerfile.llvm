@@ -14,7 +14,7 @@ RUN wget https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-17.0.5.t
     && tar -vxf llvmorg-17.0.5.tar.gz \
     && mv llvm-project-llvmorg-17.0.5 llvm-project
 
-RUN git clone https://github.com/zyuxuan0115/quilt.git \
+RUN git clone https://github.com/eniac/quilt.git \
     && cp /quilt/merge_func/merge-c-pthread/llvm-pass/MergeCPthread.h   /llvm-project/llvm/include/llvm/Transforms/Utils/ \
     && cp /quilt/merge_func/merge-c-pthread/llvm-pass/MergeCPthread.cpp /llvm-project/llvm/lib/Transforms/Utils/ \
     && cp /quilt/merge_func/merge-c-pthread/llvm-pass/CMakeLists.txt    /llvm-project/llvm/lib/Transforms/Utils/ \
