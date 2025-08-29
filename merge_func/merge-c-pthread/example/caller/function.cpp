@@ -140,30 +140,29 @@ void* make_rpc_async(void* arg) {
 int main() {
   // Read caller input, append a random suffix once
   char* input = get_arg_from_caller();
+  nlohmann::json j = nlohmann::json::parse(input);
+  int thread_count = j["iter_count"].get<int>();
+
   char* random_string = (char*)malloc((LENGTH+1));
   generate_random_string(random_string, LENGTH);
 
-  // Ensure input has enough space; if unsure, build a std::string
-  std::string base_input = std::string(input) + random_string;
-
-  free(random_string);
   free(input);
 
-  pthread_t threads[THREAD_COUNT];
-  std::vector<ThreadArg> args(THREAD_COUNT);
-  for (int i = 0; i < 5; i++) {
-    args[i].input = base_input; // same input for all; customize if needed
+  pthread_t threads[thread_count];
+  std::vector<ThreadArg> args(thread_count);
+  for (int i = 0; i < thread_count; i++) {
+    args[i].input = std::string(random_string); // same input for all; customize if needed
     pthread_create(&threads[i], nullptr, make_rpc_async, &args[i]);
   }
 
-  for (int i = 0; i < THREAD_COUNT; ++i) {
+  for (int i = 0; i < thread_count; ++i) {
     pthread_join(threads[i], nullptr);
   }
 
   // Concatenate all results
   std::string combined;
-  combined.reserve(1024 * THREAD_COUNT); // heuristic reserve
-  for (int i = 0; i < THREAD_COUNT; ++i) {
+  combined.reserve(1024 * thread_count); // heuristic reserve
+  for (int i = 0; i < thread_count; ++i) {
     combined += args[i].result;
   }
 
