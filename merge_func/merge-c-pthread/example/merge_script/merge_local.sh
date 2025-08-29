@@ -3,8 +3,8 @@
 LLVM_DIR=/proj/zyuxuanssf-PG0/zyuxuan/llvm-project-pthread/build/bin
 
 function compile {
-  $LLVM_DIR/clang -emit-llvm -S -O1 -o caller.ll caller/function.cpp
-  $LLVM_DIR/clang -emit-llvm -S -O1 -o callee.ll callee/function.c
+  $LLVM_DIR/clang -emit-llvm -S -O1 -o caller.ll ../caller/function.cpp
+  $LLVM_DIR/clang -emit-llvm -S -O1 -o callee.ll ../callee/function.c
 }
 
 function merge {
