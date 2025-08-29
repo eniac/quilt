@@ -538,7 +538,7 @@ class TestFunctionMerging(unittest.TestCase):
             max_k=3,
             candidate_selector_fn=select_downstream_candidate_roots,
             selector_args=ds_args,
-            strategy_mode='heuristic',
+            strategy_mode='greedy',
             ilp_time_limit=10.0
         )
 

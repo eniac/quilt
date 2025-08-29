@@ -40,218 +40,6 @@ def _default_candidate_selector(graph, root_node, **kwargs):
     scores = [(n, 1.0) for n in candidates]
     return candidates, scores
 
-def check_quick_feasibility(graph, R_set, M, C, full_reachable_from):
-    """
-    Performs a powerful heuristic check to prune guaranteed-infeasible root sets
-    by identifying nodes that are "uniquely captured" by a single root.
-
-    A node `v` is uniquely captured by a root `r` if `r` is the only root in
-    `R_set` from which `v` is reachable. All such nodes must belong to `r`'s
-    subgraph.
-
-    This function calculates a lower-bound resource cost for this set of captured
-    nodes. If this minimum cost exceeds M or C for any root, the entire set is
-    guaranteed to be infeasible.
-
-    Args:
-        graph (nx.DiGraph): The workflow's call graph.
-        R_set (set): The candidate set of roots to check.
-        M (float): The maximum memory capacity per container.
-        C (float): The maximum CPU capacity per container.
-        full_reachable_from (dict): A pre-computed mapping of each node to the
-                                    set of all nodes it can reach.
-
-    Returns:
-        bool: False if the root set is guaranteed to be infeasible, True otherwise.
-    """
-    other_roots = R_set.copy()
-
-    for r in R_set:
-        other_roots.remove(r)
-
-        # 1. Find all nodes reachable by other roots.
-        reachable_by_others = set()
-        for other_r in other_roots:
-            reachable_by_others.update(full_reachable_from.get(other_r, set()))
-
-        # 2. Identify nodes uniquely captured by the current root `r`.
-        # These are nodes that `r` can reach but no other root in R_set can.
-        uniquely_captured_nodes = full_reachable_from.get(r, set()) - reachable_by_others
-
-        if not uniquely_captured_nodes:
-            # Add the root back for the next iteration.
-            other_roots.add(r)
-            continue
-
-        # 3. Calculate the lower-bound resource cost for the captured set.
-        # This is a strict lower bound because it ignores the `alpha` multiplier and
-        # the cost of intermediate edges, which is exactly what we want for a heuristic.
-        m_lower_bound = sum(graph.nodes[v]['m'] for v in uniquely_captured_nodes)
-        c_lower_bound = sum(graph.nodes[v]['c'] for v in uniquely_captured_nodes)
-
-        # 4. The Pruning Check
-        if m_lower_bound > M or c_lower_bound > C:
-            return False # Guaranteed to be infeasible.
-
-        # Add the root back for the next iteration's "other_roots" set.
-        other_roots.add(r)
-
-    # If all roots pass the check, the set is potentially feasible.
-    return True
-
-def check_quick_coverage(R_set, all_graph_nodes_set, full_reachable_from):
-    """
-    Performs a quick heuristic check to ensure all nodes in the graph are
-    reachable from at least one root in the candidate set `R_set`.
-
-    If any node is unreachable, it cannot be assigned to a subgraph, making the
-    ILP guaranteed to be infeasible.
-
-    Args:
-        R_set (set): The candidate set of roots to check.
-        all_graph_nodes_set (set): A pre-computed set of all nodes in the graph.
-        full_reachable_from (dict): A pre-computed mapping of each node to the
-                                    set of all nodes it can reach.
-
-    Returns:
-        bool: False if the root set leaves some nodes uncovered, True otherwise.
-    """
-    # 1. Find the union of all nodes reachable from ANY root in the set.
-    all_reachable_nodes = set()
-    for r in R_set:
-        all_reachable_nodes.update(full_reachable_from.get(r, set()))
-
-    # 2. Check if this union covers every node in the entire graph.
-    # The issubset check is more efficient than comparing lengths of sorted lists.
-    return all_graph_nodes_set.issubset(all_reachable_nodes)
-
-def check_objective_bound(graph, R_set, best_cost, full_reachable_from):
-    """
-    Performs a cost-based pruning check.
-
-    It calculates a guaranteed lower bound on the communication cost for R_set.
-    If this lower bound is already greater than or equal to the best cost found
-    so far, the candidate set is pruned.
-
-    Args:
-        graph (nx.DiGraph): The workflow's call graph.
-        R_set (set): The candidate set of roots.
-        best_cost (float): The cost of the best solution found so far.
-        full_reachable_from (dict): Pre-computed reachability mapping.
-
-    Returns:
-        bool: False if the candidate is guaranteed to not be better than the
-              current best solution, True otherwise.
-    """
-    # 1. For each node, find which roots in R_set can reach it.
-    reachable_from_roots = {
-        n: {r for r in R_set if n in full_reachable_from.get(r, set())}
-        for n in graph.nodes()
-    }
-
-    # 2. Identify uniquely captured nodes.
-    node_to_capturing_root = {}
-    for node, roots in reachable_from_roots.items():
-        if len(roots) == 1:
-            node_to_capturing_root[node] = list(roots)[0]
-
-    # 3. Sum the weights of "forced" cross-subgraph edges.
-    guaranteed_cost = 0.0
-    for u, v, data in graph.edges(data=True):
-        root_u = node_to_capturing_root.get(u)
-        root_v = node_to_capturing_root.get(v)
-
-        if root_u is not None and root_v is not None and root_u != root_v:
-            guaranteed_cost += data.get('weight', 1.0)
-
-            # Early exit if we've already exceeded the best cost.
-            if guaranteed_cost >= best_cost:
-                return False
-
-    return True # The candidate might be better.
-
-
-
-def calculate_removability_scores(graph, M, C, assignment, roots_to_score, **kwargs):
-    """
-    Calculates a removability score for each root based on the current ILP assignment.
-
-    This function is designed to be used in the refinement stage to identify the best
-    root to remove. It prioritizes removing roots that have few nodes assigned to them
-    and whose subgraphs have high resource headroom (i.e., are far from violating
-    memory or CPU constraints).
-
-    The score is calculated as:
-        score = (number_of_assigned_nodes) / (resource_headroom + epsilon)
-
-    A lower score is better for removal.
-
-    Args:
-        graph (nx.DiGraph): The workflow's call graph.
-        M (float): The maximum memory capacity per container.
-        C (float): The maximum CPU capacity per container.
-        assignment (dict): The current best assignment from the ILP solver, mapping
-                           each root to a list of nodes in its subgraph.
-        roots_to_score (set): The set of current roots to evaluate.
-        **kwargs: Absorbs any other arguments for API compatibility.
-
-    Returns:
-        A tuple containing:
-        - An empty set (for API compatibility with candidate selectors).
-        - A list of (root, score) tuples.
-    """
-    scores = []
-
-    for r in roots_to_score:
-        nodes_in_subgraph = set(assignment.get(r, []))
-        if not nodes_in_subgraph:
-            # If a root has no nodes, it's a prime candidate for removal.
-            scores.append((r, 0.0))
-            continue
-
-        # --- Calculate Resource Utilization (logic from ilp.py) ---
-        edges_in_subgraph = [
-            (u, v) for u, v in graph.edges()
-            if u in nodes_in_subgraph and v in nodes_in_subgraph
-        ]
-        async_edges_in_subgraph = [
-            (u, v) for u, v, data in graph.edges(data=True)
-            if data.get('type') == 'async' and u in nodes_in_subgraph and v in nodes_in_subgraph
-        ]
-
-        # CPU Calculation
-        c_total = graph.nodes[r]['c'] + sum(
-            graph.edges[u, v]['alpha'] * graph.nodes[v]['c']
-            for u, v in edges_in_subgraph
-        )
-
-        # Memory Calculation
-        m_total = graph.nodes[r]['m'] + sum(
-            graph.nodes[v]['m']
-            for u, v in edges_in_subgraph
-        ) + sum(
-            (graph.edges[u, v]['alpha'] - 1) * graph.nodes[v]['m']
-            for u, v in async_edges_in_subgraph
-        )
-
-        # --- Calculate Score ---
-        mem_util = m_total / (M + EPSILON)
-        cpu_util = c_total / (C + EPSILON)
-
-        # Headroom is near 1 for low utilization, near 0 for high utilization.
-        resource_headroom = (1.0 - mem_util) * (1.0 - cpu_util)
-        num_assigned_nodes = len(nodes_in_subgraph)
-
-        # We add 1 to the numerator to ensure that even roots with a single assigned
-        # node but very high utilization are penalized, preventing them from having
-        # a score near zero.
-        score = (num_assigned_nodes + 1) / (resource_headroom + EPSILON)
-        scores.append((r, score))
-
-    # We don't need to sort here because the caller will sort based on the scores.
-    return set(), scores
-
-
 def init_worker(graph, M, C, all_nodes, predecessors, full_reachable_from, ilp_time_limit, ilp_mip_gap, ilp_mip_focus):
     """
     Initializer function for each worker process in the ProcessPoolExecutor.
@@ -379,8 +167,8 @@ def run_root_selection_strategy(strategy_name, graph, M, C, root_node, all_nodes
 
         return (best_cost, best_R, best_assignment, limit_hit) if best_assignment else (None, None, None, limit_hit)
 
-    elif strategy_mode == 'heuristic':
-        # --- Heuristic Mode (for large graphs) ---
+    elif strategy_mode == 'greedy':
+        # --- Greedy heuristic Mode (for large graphs) ---
         # This mode is single-threaded but tells Gurobi to use all available threads.
 
         # Stage 1: Find an initial feasible solution using GRASP.
@@ -388,8 +176,8 @@ def run_root_selection_strategy(strategy_name, graph, M, C, root_node, all_nodes
         best_cost = float('inf')
         initial_pool_size = 0 # in addition to main root
         all_graph_nodes_set = set(all_nodes)
-        n = len(all_nodes)
-        step_size = max(1, int(math.sqrt(n)))
+        sqrt_n = math.ceil(math.sqrt(len(all_nodes)))
+        step_size = 1 #max(1, sqrt_n)
 
         while best_R is None and initial_pool_size < len(all_nodes):
             print(f"Attempting to find initial solution with pool size {initial_pool_size + 1}...")
@@ -402,10 +190,6 @@ def run_root_selection_strategy(strategy_name, graph, M, C, root_node, all_nodes
             candidate_pool = result[0] if isinstance(result, tuple) else result
 
             R_initial = {root_node} | candidate_pool
-
-            if not check_quick_coverage(R_initial, all_graph_nodes_set, full_reachable_from) or not check_quick_feasibility(graph, R_initial, M, C, full_reachable_from) or not check_objective_bound(graph, R_initial, best_cost, full_reachable_from):
-                initial_pool_size += step_size
-                continue
 
             status, cost, assignment = solve_subgraph_construction(
                 graph=graph, R_set=R_initial, M=M, C=C, all_nodes=all_nodes,
@@ -437,11 +221,6 @@ def run_root_selection_strategy(strategy_name, graph, M, C, root_node, all_nodes
 
             # Get DIH scores to identify the least valuable roots.
             _, all_scores = candidate_selector_fn(graph, root_node, **refinement_selector_args)
-           # _, all_scores = calculate_removability_scores(
-           #     graph=graph, M=M, C=C,
-           #     assignment=best_assignment,
-           #     roots_to_score=best_R
-           # )
 
             removable_roots = sorted(
                 [r for r in best_R if r != root_node],
@@ -450,12 +229,9 @@ def run_root_selection_strategy(strategy_name, graph, M, C, root_node, all_nodes
 
             if not removable_roots: break
 
-            # Try up to the top 10 roots to remove
-            for r_to_remove in removable_roots[:10]:
+            # Try up to the top sqrt_n roots to remove
+            for r_to_remove in removable_roots[:sqrt_n]:
                 R_temp = best_R - {r_to_remove}
-
-                if not check_quick_coverage(R_temp, all_graph_nodes_set, full_reachable_from) or not check_quick_feasibility(graph, R_temp, M, C, full_reachable_from) or not check_objective_bound(graph, R_temp, best_cost, full_reachable_from):
-                    continue
 
                 status, cost, assignment = solve_subgraph_construction(
                     graph=graph, R_set=R_temp, M=M, C=C, all_nodes=all_nodes,

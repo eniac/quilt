@@ -6,7 +6,7 @@ import math
 from root_selector import run_root_selection_strategy
 from weighted_degree import select_weighted_degree_candidates
 from downstream_impact import select_downstream_candidate_roots
-from rdag import generate_async_rdag, preprocess_graph
+from rdag import generate_async_rdag, preprocess_graph, find_root
 from ilp import print_solution_details
 
 try:
@@ -193,7 +193,7 @@ if __name__ == "__main__":
 
     # --- Experiment Configuration ---
     NUM_TRIALS = 1
-    NUM_NODES = [400]
+    NUM_NODES = [5, 10, 15, 20, 25, 50, 100, 200, 400, 800]
     NUM_THREADS = os.cpu_count()    # Use all available CPU cores for parallel ILP solves
 
     # Parameters of the random graphs
@@ -201,10 +201,10 @@ if __name__ == "__main__":
     ASYNC_PROB = 0.1                # Probability of an edge being asynchronous
     N_INVOCATIONS = 10              # N parameter for async penalty calculation
 
-    CONSTRAINT_FACTOR = 1.1         # The larger this value, the harder the problem. 
+    CONSTRAINT_FACTOR = 1.2         # The larger this value, the harder the problem. 
                                     # Empirically we find that:
                                     # <1.0 = all functions usually fit in 1 container. So it is trivial.
-                                    # 1.1 = this makes the problem challenging but not impossible. Probably
+                                    # 1.2 = this makes the problem challenging but not impossible. Probably
                                     #       the most representative settings since serverless DAGs are not really
                                     #       random rDAGs. They tend to have more structure than random.
                                     # 1.5 = the problem is quite hard for large random graphs so in most cases
@@ -243,7 +243,7 @@ if __name__ == "__main__":
         # greedy refinement strategy described in Appendix B.4.
         heuristic_mode = 'combinatorial'
         if num_nodes > 10:
-            heuristic_mode = 'heuristic'
+            heuristic_mode = 'greedy'
             print(f"\nINFO: Large graph detected ({num_nodes} nodes). Heuristic Strategy Mode: {heuristic_mode}.")
 
 
@@ -253,18 +253,21 @@ if __name__ == "__main__":
 
             # Dynamically calculate reasonable M and C constraints for the generated graph.
             # This ensures the problem is non-trivial (not everything can be merged into one group).
-            total_m_base = sum(d.get('m', 0) for _, d in G.nodes(data=True))
-            total_c_base = sum(d.get('c', 0) for _, d in G.nodes(data=True))
-            async_penalty_m, async_penalty_c = 0, 0
-            for u, v, data in G.edges(data=True):
-                if data.get('type') == 'async':
-                    alpha_uv = math.ceil(data.get('weight', 0) / N_INVOCATIONS)
-                    if alpha_uv > 1:
-                        async_penalty_m += G.nodes[v]['m'] * (alpha_uv - 1)
-                        async_penalty_c += G.nodes[v]['c'] * (alpha_uv - 1)
+            root_node = find_root(G)
 
-            M = int(math.ceil((total_m_base + async_penalty_m) / CONSTRAINT_FACTOR))
-            C = int(math.ceil((total_c_base + async_penalty_c) / CONSTRAINT_FACTOR))
+            total_m = G.nodes[root_node]['m']
+            total_c = G.nodes[root_node]['c']
+            for u, v, data in G.edges(data=True):
+
+                alpha_uv = math.ceil(data.get('weight', 0) / N_INVOCATIONS)
+                total_c += G.nodes[v]['c'] * alpha_uv
+                total_m += G.nodes[v]['m']
+
+                if data.get('type') == 'async':
+                        total_m += G.nodes[v]['m'] * (alpha_uv - 1)
+
+            M = int(math.ceil(total_m / CONSTRAINT_FACTOR))
+            C = int(math.ceil(total_c / CONSTRAINT_FACTOR))
 
             # Run the full comparison for this single generated graph.
             result = run_comparison(
