@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-LLVM_DIR=/proj/zyuxuanssf-PG0/zyuxuan/llvm-project-pthread/build/bin
+LLVM_DIR=/llvm/bin
 
 function compile {
   $LLVM_DIR/clang -emit-llvm -S -O1 -o caller.ll caller/function.cpp
@@ -11,7 +11,7 @@ function merge {
   $LLVM_DIR/opt -passes=merge-c-pthread -rename-callee-c-pthread -S callee.ll -o callee_rename.ll
   $LLVM_DIR/opt -passes='sroa,mem2reg,instcombine,simplifycfg,loop-simplify,lcssa,indvars' caller.ll -S -o caller0.ll
   $LLVM_DIR/llvm-link caller0.ll callee_rename.ll -S -o caller_callee.ll
-  $LLVM_DIR/opt -passes=merge-c-pthread -fanout-threshold=3 -merge-c-pthread -S caller_callee.ll -o merged.ll 
+  $LLVM_DIR/opt -passes=merge-c-pthread -fanout-threshold=5 -merge-c-pthread -S caller_callee.ll -o merged.ll 
 }
 
 function link {
