@@ -20,9 +20,9 @@ static cl::opt<bool> RenameCallee_cpthread(
 
 // Integer option with default = 10
 static cl::opt<unsigned> FanoutThreshold(
-    "fanout-threshold",
-    cl::desc("Loop induction variable threshold for spawning threads"),
-    cl::init(10));
+        "fanout-threshold",
+        cl::desc("Loop induction variable threshold for spawning threads"),
+        cl::init(10));
 
 PreservedAnalyses MergeCPthreadPass::run(Module &M,
                                       ModuleAnalysisManager &AM) {
@@ -57,7 +57,6 @@ void MergeCPthreadPass::MergeCallerCallee(Module* M, FunctionAnalysisManager* FA
   Value* loopInductionVar = pn;
 
   CallInst* pthreadCreate = getCallinstByCalleeName(mainFunc, "pthread_create");
-
   // --- Split blocks ---
   BasicBlock *CurBB  = pthreadCreate->getParent();
 
@@ -97,9 +96,6 @@ void MergeCPthreadPass::MergeCallerCallee(Module* M, FunctionAnalysisManager* FA
 
 }
 
-void MergeCPthreadPass::ChangeCalleeToLocal(Function* callee) {
-  CallInst* getArgCall = getCallinstByCalleeName(callee, "get_arg_from_caller");
-}
 
 CallInst* MergeCPthreadPass::getCallinstByCalleeName(Function* f, std::string fname) {
   for (Function::iterator BBB = f->begin(), BBE = f->end(); BBB != BBE; ++BBB){
@@ -107,10 +103,12 @@ CallInst* MergeCPthreadPass::getCallinstByCalleeName(Function* f, std::string fn
       if (isa<CallInst>(IB)) {
         CallInst* ci = dyn_cast<CallInst>(IB);
         Function* func = ci->getCalledFunction();
-        std::string calledFuncName = demangle(func->getName());
-        errs()<<calledFuncName<<"\n";
-        if (calledFuncName == fname) {
-          return ci;
+        if (func && func->hasName()) {
+          std::string calledFuncName = demangle(func->getName());
+          errs()<<calledFuncName<<"\n";
+          if (calledFuncName == fname) {
+            return ci;
+          }
         }
       }
     }
