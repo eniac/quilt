@@ -109,8 +109,6 @@ def run_root_selection_strategy(strategy_name, graph, M, C, root_node, all_nodes
         best_cost = float('inf')
         best_R = None
         best_assignment = None
-        limit_hit = False
-        pruned_count = 0
 
         # Use a ProcessPoolExecutor for parallel ILP solving.
         with ProcessPoolExecutor(max_workers=num_threads,
@@ -121,8 +119,6 @@ def run_root_selection_strategy(strategy_name, graph, M, C, root_node, all_nodes
             # Get the pool of candidate roots to choose from.
             candidate_pool, _ = candidate_selector_fn(graph, root_node, **selector_args)
             candidate_pool_list = sorted(list(candidate_pool)) # Sort for deterministic combinations
-
-            tried_R_configs = set()
 
             for k in range(1, max_k + 1):
                 if not candidate_pool_list and k > 1:
@@ -138,19 +134,12 @@ def run_root_selection_strategy(strategy_name, graph, M, C, root_node, all_nodes
                     for r_tuple in itertools.combinations(candidate_pool_list, num_to_choose)
                 ]
 
-                # Prune configurations that have already been tried.
-                unique_tuples_for_k = [t for t in candidate_R_tuples_for_k if frozenset(t) not in tried_R_configs]
-                tried_R_configs.update(frozenset(t) for t in unique_tuples_for_k)
-
-                if not unique_tuples_for_k: continue
-
                 # Map the list of root tuples to the worker pool for parallel execution.
-                results_iterator = executor.map(evaluate_r_tuple_worker, unique_tuples_for_k)
+                results_iterator = executor.map(evaluate_r_tuple_worker, candidate_R_tuples_for_k)
 
                 # Process results as they complete.
                 for r_tuple_res, status, cost, assignment in results_iterator:
                     if status == gp.GRB.INFEASIBLE and cost is None:
-                        pruned_count += 1
                         continue
 
                     if cost is not None and cost < best_cost:
@@ -160,12 +149,7 @@ def run_root_selection_strategy(strategy_name, graph, M, C, root_node, all_nodes
                         print(f"*** New Best Solution Found! R={best_R}, Cost={cost:.4f} ***")
 
         print(f"\n=== Root Selection ({strategy_name}) Finished ===")
-        if pruned_count > 0:
-            print(f"Pruned {pruned_count} provably infeasible root sets in parallel.")
-        if limit_hit:
-            print(f"NOTE: Exploration stopped early due to combination threshold.")
-
-        return (best_cost, best_R, best_assignment, limit_hit) if best_assignment else (None, None, None, limit_hit)
+        return (best_cost, best_R, best_assignment) if best_assignment else (None, None, None)
 
     elif strategy_mode == 'greedy':
         # --- Greedy heuristic Mode (for large graphs) ---
@@ -202,7 +186,7 @@ def run_root_selection_strategy(strategy_name, graph, M, C, root_node, all_nodes
                 best_R = R_initial
                 best_cost = cost
                 best_assignment = assignment
-                print(f"Found initial feasible solution with {len(best_R)} roots. Cost={best_cost:.4f}")
+                print(f"*** New Best Solution Found! R={best_R}, Cost={cost:.4f} ***")
                 break
             else:
                 initial_pool_size += step_size
@@ -230,7 +214,7 @@ def run_root_selection_strategy(strategy_name, graph, M, C, root_node, all_nodes
             if not removable_roots: break
 
             # Try up to the top sqrt_n roots to remove
-            for r_to_remove in removable_roots[:sqrt_n]:
+            for r_to_remove in removable_roots:
                 R_temp = best_R - {r_to_remove}
 
                 status, cost, assignment = solve_subgraph_construction(
@@ -256,7 +240,7 @@ def run_root_selection_strategy(strategy_name, graph, M, C, root_node, all_nodes
             if not improvement_found:
                 break # No single removal improved the solution, local optimum reached.
 
-        return best_cost, best_R, best_assignment, False
+        return best_cost, best_R, best_assignment
     else:
         raise ValueError(f"Unknown strategy_mode: {strategy_mode}")
 

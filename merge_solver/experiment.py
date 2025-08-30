@@ -56,18 +56,18 @@ def run_comparison(name, graph, M, C, max_k,
     # of all edge weights in the graph.
     baseline_cost = sum(data.get('weight', 0) for _, _, data in graph.edges(data=True))
     # The result format matches the other strategies for consistent processing.
-    # (cost, R, assignment, limit_hit), duration
+    # (cost, R, assignment), duration
     # In the baseline, every node is its own "root" in its own container.
     results["Baseline"] = ((baseline_cost, set(graph.nodes()), None, False), 0.0)
 
     # --- Strategy 1: Optimal Solution ---
-    # This is only run for small graphs (<= 20 nodes) due to its exponential complexity.
-    if len(graph) <= 20:
+    # This is only run for small graphs (<= 25 nodes) due to its exponential complexity.
+    if len(graph) <= 25:
         print("Running Optimal Solution")
         start_opt = time.time()
         opt_res = run_root_selection_strategy(
             strategy_name="Optimal",
-            graph=graph, M=M, C=C, 
+            graph=graph, M=M, C=C,
             root_node=root, all_nodes=nodes, predecessors=preds, full_reachable_from=reach,
             max_k=max_k,
             candidate_selector_fn=None, # None means all nodes are candidates
@@ -77,7 +77,7 @@ def run_comparison(name, graph, M, C, max_k,
         )
         results["Optimal"] = (opt_res, time.time() - start_opt)
     else:
-        print("\n--- Skipping Optimal Solution (graph > 20 nodes) ---")
+        print("\n--- Skipping Optimal Solution (graph > 25 nodes) ---")
         results["Optimal"] = (None, 0.0)
 
     # --- Strategy 2: Downstream Impact Heuristic ---
@@ -133,11 +133,9 @@ def run_comparison(name, graph, M, C, max_k,
         if strategy not in results: continue
         
         result_data, duration = results[strategy]
-        cost, R, assign, limit_hit = result_data if result_data else (None, None, None, False)
+        cost, R, assign = result_data if result_data else (None, None, None, False)
         print(f"Strategy: {strategy}")
         print(f"  Execution Time: {duration:.2f}s")
-        if limit_hit:
-            print(f"  NOTE: Stopped early due to combination threshold.")
         if cost is not None:
             print(f"  Best Cost Found: {cost:.4f}")
             if R:
@@ -164,8 +162,8 @@ def run_comparison(name, graph, M, C, max_k,
     final_results = {}
     for strategy, (result_data, duration) in results.items():
         if result_data:
-            cost, R, _, limit_hit = result_data
-            final_results[strategy] = ([cost, R, limit_hit], duration)
+            cost, R, _ = result_data
+            final_results[strategy] = ([cost, R], duration)
         else:
             final_results[strategy] = (None, duration)
 
@@ -192,8 +190,8 @@ def save_results(final_result, filename="merge_decision_result.json"):
 if __name__ == "__main__":
 
     # --- Experiment Configuration ---
-    NUM_TRIALS = 1
-    NUM_NODES = [5, 10, 15, 20, 25, 50, 100, 200, 400, 800]
+    NUM_TRIALS = 3
+    NUM_NODES = [20, 25] #, 50, 100, 200, 400, 800]
     NUM_THREADS = os.cpu_count()    # Use all available CPU cores for parallel ILP solves
 
     # Parameters of the random graphs
@@ -214,7 +212,7 @@ if __name__ == "__main__":
                                     #        solution as feasbile. 
 
     # Optimal solution settings
-    MAX_K = 12                  # Max number of subgraphs to consider for the optimal solution
+    MAX_K = 8                  # Max number of subgraphs to consider for the optimal solution
     OPTIMAL_COMBINATION_THRESHOLD = 150000 # Safety limit for the optimal solver so it doesn't take forever
 
     # Weights for the Downstream Impact Heuristic score
@@ -224,7 +222,7 @@ if __name__ == "__main__":
 
     # GRASP parameters
     NUM_CANDIDATES = 15             # Size of the initial root candidate pool for heuristics
-    RCL_SIZE = 5                    # Size of the Restricted Candidate List
+    RCL_SIZE = 8                    # Size of the Restricted Candidate List
 
     # Gurobi solver parameters
     TIME_LIMIT_OPTIMAL = 180.0      # Time limit for the slow, optimal solver

@@ -79,7 +79,7 @@ class TestFunctionMerging(unittest.TestCase):
 
         M, C = 15, 15
         root, all_nodes, preds, reach = preprocess_graph(G)
-        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=3)
+        cost, R, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=3)
         self.assertEqual(len(R), 3)
         self.assertEqual(cost, 200)
 
@@ -90,7 +90,7 @@ class TestFunctionMerging(unittest.TestCase):
         G = self._create_graph(nodes, edges)
         M, C  = 10, 10
         root, all_nodes, preds, reach = preprocess_graph(G)
-        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=2)
+        cost, R, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=2)
         self.assertEqual(len(R), 1)
         self.assertEqual(cost, 0)
 
@@ -101,7 +101,7 @@ class TestFunctionMerging(unittest.TestCase):
         G = self._create_graph(nodes, edges)
         M, C = 10, 10
         root, all_nodes, preds, reach = preprocess_graph(G)
-        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=2)
+        cost, R, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=2)
         self.assertEqual(len(R), 2)
         self.assertEqual(cost, 100)
 
@@ -112,7 +112,7 @@ class TestFunctionMerging(unittest.TestCase):
         G = self._create_graph(nodes, edges)
         root, all_nodes, preds, reach = preprocess_graph(G)
         M, C = 25, 25
-        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=3)
+        cost, R, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=3)
         self.assertEqual(len(R), 3)
         self.assertAlmostEqual(cost, 101)
         self.assertEqual(R, {0, 1, 2})
@@ -124,7 +124,7 @@ class TestFunctionMerging(unittest.TestCase):
         G = self._create_graph(nodes, edges)
         M, C  = 15, 15
         root, all_nodes, preds, reach = preprocess_graph(G)
-        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=3)
+        cost, R, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=3)
         self.assertEqual(len(R), 1)
         self.assertEqual(cost, 0)
 
@@ -135,7 +135,7 @@ class TestFunctionMerging(unittest.TestCase):
         G = self._create_graph(nodes, edges)
         M, C  = 30, 30
         root, all_nodes, preds, reach = preprocess_graph(G)
-        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=2)
+        cost, R, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=2)
         self.assertEqual(len(R), 2)
         self.assertEqual(cost, 1000)
 
@@ -146,7 +146,7 @@ class TestFunctionMerging(unittest.TestCase):
         G = self._create_graph(nodes, edges)
         M, C = 25, 25
         root, all_nodes, preds, reach = preprocess_graph(G)
-        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=3)
+        cost, R, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=3)
         self.assertEqual(len(R), 2)
         self.assertAlmostEqual(cost, 5)
 
@@ -157,7 +157,7 @@ class TestFunctionMerging(unittest.TestCase):
         G = self._create_graph(nodes, edges)
         M, C = 25, 25
         root, all_nodes, preds, reach = preprocess_graph(G)
-        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=2)
+        cost, R, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=2)
         self.assertIsNotNone(R)
         self.assertEqual(len(R), 2)
         self.assertEqual(cost, 10)
@@ -170,7 +170,7 @@ class TestFunctionMerging(unittest.TestCase):
         G = self._create_graph(nodes, edges)
         M, C = 35, 35
         root, all_nodes, preds, reach = preprocess_graph(G)
-        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=2)
+        cost, R, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=2)
         self.assertIsNotNone(R)
         self.assertEqual(len(R), 1)
         self.assertEqual(cost, 0)
@@ -182,7 +182,7 @@ class TestFunctionMerging(unittest.TestCase):
         G = self._create_graph(nodes, edges)
         M, C = 35, 35
         root, all_nodes, preds, reach = preprocess_graph(G)
-        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=2)
+        cost, R, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=2)
         self.assertIsNotNone(R)
         self.assertEqual(len(R), 1)
         self.assertEqual(cost, 0)
@@ -194,7 +194,7 @@ class TestFunctionMerging(unittest.TestCase):
         G = self._create_graph(nodes, edges)
         M, C = 20, 35
         root, all_nodes, preds, reach = preprocess_graph(G)
-        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=2)
+        cost, R, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=2)
         self.assertIsNotNone(R)
         self.assertEqual(len(R), 1)
         self.assertEqual(cost, 0)
@@ -206,7 +206,7 @@ class TestFunctionMerging(unittest.TestCase):
         G = self._create_graph(nodes, edges)
         M, C = 20, 35
         root, all_nodes, preds, reach = preprocess_graph(G)
-        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=2)
+        cost, R, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=2)
         self.assertIsNotNone(R)
         self.assertEqual(len(R), 2)
         self.assertEqual(cost, 10)
@@ -218,7 +218,7 @@ class TestFunctionMerging(unittest.TestCase):
         G = self._create_graph(nodes, edges)
         M, C = 30, 30
         root, all_nodes, preds, reach = preprocess_graph(G)
-        cost, R, _, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=3)
+        cost, R, _ = run_root_selection_strategy("Optimal", G, M, C, root, all_nodes, preds, reach, max_k=3)
         self.assertIsNotNone(R)
         # The solver will choose the cheaper option, which is to cut the async edge (cost 20)
         # and keep the sync edge internal. This results in roots {0, 2}.
@@ -249,7 +249,7 @@ class TestFunctionMerging(unittest.TestCase):
         max_k = 4
 
         root, all_nodes, preds, reach = preprocess_graph(G)
-        cost, R, assignment, _ = run_root_selection_strategy(
+        cost, R, assignment = run_root_selection_strategy(
             "Optimal", G, M, C, root, all_nodes, preds, reach, max_k
         )
 
@@ -291,7 +291,7 @@ class TestFunctionMerging(unittest.TestCase):
         max_k = 4
 
         root, all_nodes, preds, reach = preprocess_graph(G)
-        cost, R, assignment, _ = run_root_selection_strategy(
+        cost, R, assignment = run_root_selection_strategy(
             "Optimal", G, M, C, root, all_nodes, preds, reach, max_k
         )
 
@@ -338,7 +338,7 @@ class TestFunctionMerging(unittest.TestCase):
 
         root, all_nodes, preds, reach = preprocess_graph(G)
 
-        cost, R, assignment, _ = run_root_selection_strategy(
+        cost, R, assignment = run_root_selection_strategy(
             "Optimal", G, M, C, root, all_nodes, preds, reach, max_k=3
         )
 
@@ -369,7 +369,7 @@ class TestFunctionMerging(unittest.TestCase):
         max_k = 2
 
         root, all_nodes, preds, reach = preprocess_graph(G)
-        cost, R, assignment, _ = run_root_selection_strategy(
+        cost, R, assignment = run_root_selection_strategy(
             "Optimal", G, M, C, root, all_nodes, preds, reach, max_k
         )
 
@@ -409,7 +409,7 @@ class TestFunctionMerging(unittest.TestCase):
         max_k = 3
 
         root, all_nodes, preds, reach = preprocess_graph(G)
-        cost, R, assignment, _ = run_root_selection_strategy(
+        cost, R, assignment = run_root_selection_strategy(
             "Optimal", G, M, C, root, all_nodes, preds, reach, max_k
         )
 
@@ -454,7 +454,7 @@ class TestFunctionMerging(unittest.TestCase):
         max_k = 3
 
         root, all_nodes, preds, reach = preprocess_graph(G)
-        cost, R, assignment, _ = run_root_selection_strategy(
+        cost, R, assignment = run_root_selection_strategy(
             "Optimal", G, M, C, root, all_nodes, preds, reach, max_k
         )
 
@@ -533,7 +533,7 @@ class TestFunctionMerging(unittest.TestCase):
             'rcl_size': 2 # Make RCL big enough to include both 1 and 2
         }
 
-        cost, R, assignment, _ = run_root_selection_strategy(
+        cost, R, assignment = run_root_selection_strategy(
             "GRASP Test", G, M, C, root, all_nodes, preds, reach,
             max_k=3,
             candidate_selector_fn=select_downstream_candidate_roots,
