@@ -6,7 +6,7 @@ import math
 # A small constant to prevent division-by-zero errors in floating-point calculations.
 EPSILON = 1e-9
 
-def solve_subgraph_construction(graph, R_set, M, C, N, all_nodes, predecessors, full_reachable_from,
+def solve_subgraph_construction(graph, R_set, M, C, all_nodes, predecessors, full_reachable_from,
                                 time_limit=None, mip_gap=0.0, mip_focus=0, num_threads=1):
     """
     Solves the subgraph construction problem for a given set of candidate roots (R_set)
@@ -22,219 +22,155 @@ def solve_subgraph_construction(graph, R_set, M, C, N, all_nodes, predecessors, 
         R_set (set): The set of nodes chosen to be roots of the subgraphs.
         M (float): The maximum memory capacity per container.
         C (float): The maximum CPU capacity per container.
-        N (int): The total number of times the workflow was invoked (for async cost calculation).
         all_nodes (list): A list of all nodes in the graph.
         predecessors (dict): A mapping of each node to its predecessors.
         full_reachable_from (dict): A mapping showing which nodes are reachable from any other node.
-        time_limit (float, optional): Gurobi solver time limit in seconds.
-        mip_gap (float, optional): Gurobi solver MIP gap tolerance.
-        mip_focus (int, optional): Gurobi solver MIP focus setting.
-        num_threads (int, optional): Number of threads for the Gurobi solver.
+        time_limit (float, optional): Gurobi time limit.
+        mip_gap (float, optional): Gurobi MIP gap.
+        mip_focus (int, optional): Gurobi MIP focus parameter.
+        num_threads (int, optional): Number of threads for Gurobi to use.
 
     Returns:
-        tuple: A tuple containing the solver status, the final objective cost, and the
-               solution assignment dictionary.
+        A tuple containing the Gurobi status, objective value (cost), and the final
+        assignment of nodes to subgraphs.
     """
-
-    # Create a silent Gurobi environment to prevent solver logs from printing to the console.
+    # Create a silent Gurobi environment to prevent solver logs from printing.
     with gp.Env(empty=True) as env:
         env.setParam('LogToConsole', 0)
         env.start()
 
         # Create the model within the silent environment.
-        with gp.Model("SubgraphConstruction_ILP_Async", env=env) as model:
-
-            # --- Configure Solver Parameters ---
-            model.setParam(GRB.Param.Threads, num_threads)
-            if time_limit:
-                model.setParam(GRB.Param.TimeLimit, time_limit)
-            if mip_gap > 0:
-                model.setParam(GRB.Param.MIPGap, mip_gap)
+        with gp.Model("quilt_ilp", env=env) as model:
+            if time_limit is not None:
+                model.setParam('TimeLimit', time_limit)
+            if mip_gap > 0.0:
+                model.setParam('MIPGap', mip_gap)
             if mip_focus > 0:
-                model.setParam(GRB.Param.MIPFocus, mip_focus)
+                model.setParam('MIPFocus', mip_focus)
+            model.setParam('Threads', num_threads)
 
-            # --- Decision Variables (Appendix A.2) ---
+            # --- Decision Variables ---
+            # y[i, r] = 1 if node i is in the subgraph rooted at r.
+            y = model.addVars(all_nodes, R_set, vtype=GRB.BINARY, name="y")
+            # x[i, j] = 1 if the edge (i, j) is cut (crosses a subgraph boundary).
+            x = model.addVars(graph.edges(), vtype=GRB.BINARY, name="x")
+            # z[i, j, r] = 1 if edge (i, j) is part of the subgraph rooted at r.
+            z = model.addVars(graph.edges(), R_set, vtype=GRB.BINARY, name="z")
 
-            # Filter for roots in R_set that actually exist in the graph.
-            valid_roots_in_R = {r for r in R_set if r in graph and r in full_reachable_from}
 
-            # If R_set is specified but contains no valid roots, the problem is ill-defined.
-            if not valid_roots_in_R and R_set:
-                return GRB.INFEASIBLE, None, None
+            # --- Objective Function ---
+            # Minimize the total weight of all cut edges.
+            model.setObjective(gp.quicksum(graph.edges[i, j]['weight'] * x[i, j] for i, j in graph.edges()), GRB.MINIMIZE)
 
-            # y[i, r]: A binary variable that is 1 if function 'i' is assigned to the
-            # subgraph rooted at 'r', and 0 otherwise.
-            # We only create variables where node 'i' is reachable from root 'r'.
-            y_indices = []
-            for r_ in valid_roots_in_R:
-                for i in full_reachable_from.get(r_, set()):
-                    y_indices.append((i, r_))
-            y = model.addVars(y_indices, vtype=GRB.BINARY, name="y")
+            # --- Constraints ---
 
-            # z[u, v, r]: An auxiliary binary variable for each asynchronous edge (u, v).
-            # This variable will be forced to 1 if and only if both 'u' and 'v' are
-            # assigned to the subgraph rooted at 'r'. This is used to model the
-            # non-linear resource penalty for internal asynchronous calls.
-            async_edges = [(u, v) for u, v, d in graph.edges(data=True) if d.get('type') == 'async']
-            z_indices = [(u, v, r) for u, v in async_edges for r in valid_roots_in_R if (u,r) in y and (v,r) in y]
-            z = model.addVars(z_indices, vtype=GRB.BINARY, name="z")
+            # Constraint 1: Root Inclusion. Every chosen root must belong to its own subgraph.
+            for r in R_set:
+                model.addConstr(y[r, r] == 1, name=f"root_incl_{r}")
 
-            # --- Objective Function (Appendix A.3) ---
-            # The goal is to minimize the sum of weights of all cross-graph edges.
-            # The paper formulates this by maximizing the "savings" from internalizing edges.
-            # An edge (i, j) where j is a root is "saved" (not a cross-edge) if node i is
-            # also assigned to the subgraph of j (i.e., y[i, j] = 1).
-
-            # Calculate the total potential cost, assuming every edge pointing to a root is a cross-edge.
-            total_potential_cost = sum(graph.edges[i, j]['weight']
-                                       for i, j in graph.edges() if j in valid_roots_in_R)
-
-            # Calculate the total "savings" by summing the weights of edges (i,j) that are internalized.
-            cost_savings = gp.quicksum(graph.edges[i, j]['weight'] * y[i, j]
-                                       for i, j in graph.edges()
-                                       if j in valid_roots_in_R and (i, j) in y)
-
-            # Minimize: (Total Potential Cost) - (Total Savings)
-            model.setObjective(total_potential_cost - cost_savings, GRB.MINIMIZE)
-
-            # --- Constraints (Appendix A.4) ---
-
-            # Constraint 1: Root Inclusion
-            # Every chosen root 'r' must belong to its own subgraph.
-            for r_ in valid_roots_in_R:
-                model.addConstr(y[r_, r_] == 1, name=f"RootInclude_{r_}")
-
-            # Constraint 2: Node Coverage
-            # Every function 'i' in the workflow must be assigned to at least one subgraph.
-            # The use of >= 1 allows for non-disjoint partitions, meaning a function can be
-            # duplicated (cloned) into multiple merged subgraphs if it is optimal to do so.
+            # Constraint 2: Node Coverage. Each node must be assigned to at least one subgraph.
             for i in all_nodes:
-                model.addConstr(gp.quicksum(y[i, r_] for r_ in valid_roots_in_R if (i, r_) in y) >= 1, name=f"NodeCover_{i}")
+                model.addConstr(gp.quicksum(y[i, r] for r in R_set) >= 1, name=f"assign_{i}")
 
-            # Constraint 3: Connectivity
-            # If a function 'i' is in subgraph G_r, at least one of its direct
-            # predecessors must also be in G_r. This ensures subgraphs are connected.
-            for r_ in valid_roots_in_R:
-                for i in full_reachable_from.get(r_, set()):
-                    if i == r_:
-                        continue
+            # Constraint 3: Connectivity. 
+            for r in R_set:
+                for i in all_nodes:
+                    if i != r:
+                        model.addConstr(y[i, r] <= gp.quicksum(y[p, r] for p in predecessors[i]), name=f"conn_{i}_{r}")
 
-                    preds_i = predecessors.get(i, [])
-                    # Only add the constraint if there's at least one predecessor that *can* be in G_r
-                    if any((j, r_) in y for j in preds_i):
-                         model.addConstr(y[i, r_] <= gp.quicksum(y[j, r_] for j in preds_i if (j, r_) in y), name=f"Connect_{i}_{r_}")
-                    # If i has no predecessors that can be in G_r, it cannot be in G_r itself (unless it's the root).
-                    elif (i, r_) in y:
-                         model.addConstr(y[i, r_] == 0, name=f"Connect_ForceZero_{i}_{r_}")
 
-            # Constraint 4: Cross-Edge Rule
-            # If an edge (i, j) exists and 'j' is NOT a root, then the edge must be internal.
-            # This means if 'i' is in subgraph G_r, 'j' must also be in G_r.
-            for i, j in graph.edges():
-                if j not in valid_roots_in_R:
-                    for r_ in valid_roots_in_R:
-                        if (i, r_) in y and (j, r_) in y:
-                            model.addConstr(y[i, r_] <= y[j, r_], name=f"CrossRule_{i}_{j}_{r_}")
+            # Constraint 4: Cross-Edge Definition. Links x and y variables to define a cut.
+            for r in R_set:
+                for i, j in graph.edges():
+                    model.addConstr(x[i, j] >= y[i, r] - y[j, r], name=f"cut_{i}_{j}_{r}")
 
-            # Constraints 5 & 6: Memory and CPU Capacity
-            # The total resource usage of each subgraph must not exceed container limits.
-            for r_ in valid_roots_in_R:
-                # Sum of baseline resource requirements for all functions included in the subgraph.
-                mem_sum = gp.quicksum(graph.nodes[i]['m'] * y[i, r_] for i, rr in y.keys() if rr == r_)
-                cpu_sum = gp.quicksum(graph.nodes[i]['c'] * y[i, r_] for i, rr in y.keys() if rr == r_)
 
-                # Calculate the additional resource penalty for internal asynchronous calls.
-                # alpha_uv = ceil(w_uv / N) represents the peak number of concurrent instances of v
-                # called by u. The penalty adds the resource cost for the additional (alpha_uv - 1) instances.
-                async_mem_penalty = gp.quicksum(
-                    z[u, v, r_] * graph.nodes[v]['m'] * (math.ceil(graph.edges[u, v]['weight'] / N) - 1)
-                    for u, v, rr in z.keys()
-                    if rr == r_ and math.ceil(graph.edges[u, v]['weight'] / N) > 1
+            # Constraint 5: Cross-Edge Root Rule. Edges not pointing to a root cannot be cut.
+            for r in R_set:
+                for i, j in graph.edges():
+                    if j not in R_set:
+                        model.addConstr(y[i, r] <= y[j, r], name=f"cross_edge_rule_{i}_{j}_{r}")
+
+            async_edges = [(u, v) for u, v, data in graph.edges(data=True) if data.get('type') == 'async']
+
+            for r in R_set:
+                # Constraint 6: Memory capacity
+                m_r = graph.nodes[r]['m']
+                mem_cost = m_r + gp.quicksum(
+                    graph.nodes[j]['m'] * z[i, j, r]
+                    for i, j in graph.edges()
+                ) + gp.quicksum(
+                    (graph.edges[i, j]['alpha'] - 1) * graph.nodes[j]['m'] * z[i, j, r]
+                    for i, j in async_edges
                 )
-                async_cpu_penalty = gp.quicksum(
-                    z[u, v, r_] * graph.nodes[v]['c'] * (math.ceil(graph.edges[u, v]['weight'] / N) - 1)
-                    for u, v, rr in z.keys()
-                    if rr == r_ and math.ceil(graph.edges[u, v]['weight'] / N) > 1
+                model.addConstr(mem_cost <= M, name=f"mem_cap_{r}")
+
+                # Constraint 7: CPU capacity
+                c_r = graph.nodes[r]['c']
+                cpu_cost = c_r + gp.quicksum(
+                    graph.edges[i, j]['alpha'] * graph.nodes[j]['c'] * z[i, j, r]
+                    for i, j in graph.edges()
                 )
+                model.addConstr(cpu_cost <= C, name=f"cpu_cap_{r}")
 
-                model.addConstr(mem_sum + async_mem_penalty <= M, name=f"CapacityM_{r_}")
-                model.addConstr(cpu_sum + async_cpu_penalty <= C, name=f"CapacityC_{r_}")
 
-            # Constraint 7: Auxiliary Variable Linearization
-            # These three constraints force z[u,v,r] to be 1 if and only if y[u,r] and y[v,r] are both 1.
-            # This is a standard ILP technique to model the logical AND operation (z = y_u AND y_v).
-            for u, v, r_ in z.keys():
-                model.addConstr(z[u, v, r_] <= y[u, r_], name=f"z_lin1_{u}_{v}_{r_}")
-                model.addConstr(z[u, v, r_] <= y[v, r_], name=f"z_lin2_{u}_{v}_{r_}")
-                model.addConstr(z[u, v, r_] >= y[u, r_] + y[v, r_] - 1, name=f"z_lin3_{u}_{v}_{r_}")
+            # Constraint 8: Link z[i, j, r] to y variables. An edge (i,j) is in subgraph r
+            # only if both nodes i and j are in subgraph r.
+            for r in R_set:
+                for i, j in graph.edges():
+                    model.addConstr(z[i, j, r] <= y[i, r], name=f"z_link_y_i_{i}_{j}_{r}")
+                    model.addConstr(z[i, j, r] <= y[j, r], name=f"z_link_y_j_{i}_{j}_{r}")
+                    model.addConstr(z[i, j, r] >= y[i, r] + y[j, r] - 1, name=f"z_link_linearize_{i}_{j}_{r}")
 
-            # --- Solve ---
+
+            # --- Solve the Model ---
             model.optimize()
 
-            # --- Process and Return Results ---
-            status = model.Status
-            objective_value = None
-            assignment = None
-
-            # If the solver found at least one feasible solution...
-            if model.SolCount > 0:
-                objective_value = model.ObjVal
-                # Create a simple dictionary representing the final assignment.
-                assignment = {(i, r): 1 for (i, r), var in y.items() if var.X > 0.9}
-                # Ensure status reflects that a usable (even if not proven optimal) solution was found.
-                if status not in [GRB.OPTIMAL, GRB.SUBOPTIMAL, GRB.TIME_LIMIT]:
-                    status = GRB.SUBOPTIMAL
-
-            return status, objective_value, assignment
+            # --- Extract Solution ---
+            if model.status == GRB.OPTIMAL or model.status == GRB.TIME_LIMIT:
+                assignment = collections.defaultdict(list)
+                for r in R_set:
+                    for i in all_nodes:
+                        if y[i, r].X > 0.5:
+                            assignment[r].append(i)
+                return model.status, model.objVal, assignment
+            else:
+                return model.status, None, None
 
 
-def print_solution_details(graph, M, C, N, best_R, best_assignment):
+def print_solution_details(graph, R_set, assignment, M, C):
     """
-    Prints a summary of the ILP solution, including the composition of each
-    subgraph and a validation of its resource usage.
+    Prints a detailed summary of the ILP solution, including the cost, subgraph
+    compositions, and their resource usage. It verifies the resource usage of
+    each subgraph against the constraints.
     """
-    if not best_assignment:
-        print("No solution assignment to display.")
+    if not assignment:
+        print("No feasible solution found or ILP failed.")
         return
 
-    print("\n--- Solution Details ---")
-    if not best_R:
-        print("No roots selected.")
-        return
-
-    print(f"Selected Roots (R): {best_R}")
-
-    # Reconstruct the subgraphs from the 'y' variable assignments.
-    subgraphs = collections.defaultdict(set)
-    for (i, r), assigned in best_assignment.items():
-        if assigned == 1:
-            subgraphs[r].add(i)
-
-    print("\nSubgraphs:")
-    valid_caps = True
-    # Iterate through the selected roots to print details for each subgraph.
-    for r in sorted(list(best_R), key=lambda x: str(x)):
-        nodes_in_subgraph = subgraphs.get(r, set())
+    print("\n--- ILP Solution Details ---")
+    for r in R_set:
+        nodes_in_subgraph = set(assignment.get(r, []))
         if not nodes_in_subgraph:
             continue
 
-        # Recalculate the resource usage for validation purposes.
-        # This logic mirrors the capacity constraints in the ILP.
-        m_base = sum(graph.nodes[i]['m'] for i in nodes_in_subgraph)
-        c_base = sum(graph.nodes[i]['c'] for i in nodes_in_subgraph)
+        edges_in_subgraph = [(u, v) for u, v in graph.edges() if u in nodes_in_subgraph and v in nodes_in_subgraph]
+        async_edges_in_subgraph = [(u, v) for u, v, data in graph.edges(data=True) if data.get('type') == 'async' and u in nodes_in_subgraph and v in nodes_in_subgraph]
 
-        # Recalculate the additive penalty for any internal async calls.
-        async_penalty_m = 0
-        async_penalty_c = 0
-        for u, v, data in graph.edges(data=True):
-            if data.get('type') == 'async' and u in nodes_in_subgraph and v in nodes_in_subgraph:
-                alpha_uv = math.ceil(data.get('weight', 0) / N)
-                if alpha_uv > 1:
-                    async_penalty_m += graph.nodes[v]['m'] * (alpha_uv - 1)
-                    async_penalty_c += graph.nodes[v]['c'] * (alpha_uv - 1)
+        # CPU Calculation
+        c_total = graph.nodes[r]['c'] + sum(
+            graph.edges[u, v]['alpha'] * graph.nodes[v]['c']
+            for u, v in edges_in_subgraph
+        )
 
-        m_total = m_base + async_penalty_m
-        c_total = c_base + async_penalty_c
+        # Memory Calculation
+        m_total = graph.nodes[r]['m'] + sum(
+            graph.nodes[v]['m']
+            for u, v in edges_in_subgraph
+        ) + sum(
+            (graph.edges[u, v]['alpha'] - 1) * graph.nodes[v]['m']
+            for u, v in async_edges_in_subgraph
+        )
 
         print(f"  Subgraph rooted at {r}:")
         if len(nodes_in_subgraph) < 50:
@@ -245,11 +181,6 @@ def print_solution_details(graph, M, C, N, best_R, best_assignment):
         # Check if the calculated usage violates the constraints.
         m_ok = m_total <= M + EPSILON
         c_ok = c_total <= C + EPSILON
-        print(f"    Memory: {m_total:.1f} <= {M:.1f} {'OK' if m_ok else 'VIOLATED!'}")
-        print(f"    CPU:    {c_total:.1f} <= {C:.1f} {'OK' if c_ok else 'VIOLATED!'}")
 
-        if not m_ok or not c_ok:
-            valid_caps = False
-
-    print("\nValidation Summary:")
-    print(f"  Capacity OK: {valid_caps}")
+        print(f"    Memory: {m_total:.2f} / {M:.2f} (OK: {m_ok})")
+        print(f"    CPU:    {c_total:.2f} / {C:.2f} (OK: {c_ok})")

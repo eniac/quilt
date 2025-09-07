@@ -1,6 +1,7 @@
 import networkx as nx
 import collections
 import random
+import math
 
 def find_root(graph):
     """
@@ -61,6 +62,7 @@ def compute_reachability(graph, roots_to_check):
 
     return dict(reachable_from)
 
+
 def preprocess_graph(graph):
     """
     Performs all necessary checks and pre-computations on a graph before solving.
@@ -96,44 +98,44 @@ def preprocess_graph(graph):
 
     return root_node, all_nodes, predecessors, full_reachable_from
 
-def _generate_base_rdag(num_nodes, extra_edge_factor, async_prob):
+def generate_async_rdag(num_nodes, extra_edge_factor=1.0, async_prob=0.3,
+                        min_m=1, max_m=10, min_c=1, max_c=10, min_w=1, max_w=100, N_INVOCATIONS=1000):
     """
-    Base function to generate a random rDAG with specified properties.
+    Generates a random, rooted Directed Acyclic Graph (rDAG) with properties
+    that simulate a serverless workflow, including both synchronous and asynchronous calls.
 
-    This function creates random graphs for testing the Quilt algorithms, as
-    described in the evaluation in Section 7.5.2 of the paper.
+    The generation process ensures the graph has a single root and is a DAG.
+    It assigns random resource costs (memory 'm', CPU 'c') to nodes and
+    weights ('weight', 'alpha') and call types ('type') to edges.
+
+    Args:
+        num_nodes (int): The number of nodes (functions) in the graph.
+        extra_edge_factor (float): Multiplier for adding extra edges beyond a simple tree.
+        async_prob (float): The probability that any given edge is an asynchronous call.
+        min_m, max_m (int): Min/max memory cost for a function.
+        min_c, max_c (int): Min/max CPU cost for a function.
+        min_w, max_w (int): Min/max weight for a function call edge.
+        N_INVOCATIONS (int): The total number of workflow invocations, used to calculate alpha.
+
+    Returns:
+        nx.DiGraph: The generated random graph.
     """
-    min_m, max_m = 5, 50
-    min_c, max_c = 5, 50
-    min_w, max_w = 1, 10
-
-    if num_nodes <= 0:
+    if num_nodes == 0:
         return nx.DiGraph()
 
-    G = nx.DiGraph(name=f"RandomRDAG_{num_nodes}")
-    G.add_nodes_from(range(num_nodes))
-
-    # First, build a spanning tree rooted at node 0. This ensures that the graph
-    # is connected and is a DAG from the start.
-    nodes_list = list(range(1, num_nodes))
-    random.shuffle(nodes_list)
-    for i in nodes_list:
-        # Connect each node to a random, already-existing node with a smaller index.
-        parent = random.randint(0, i - 1)
-        G.add_edge(parent, i)
-
-    # Calculate node depths to help add extra edges without creating cycles.
-    # An edge can only go from a node at a lower depth to a node at a higher depth.
+    G = nx.DiGraph()
+    G.add_node(0)
+    nodes = [0]
     depths = {0: 0}
-    queue = collections.deque([0])
-    visited_depth = {0}
-    while queue:
-        u = queue.popleft()
-        for v in G.successors(u):
-            if v not in visited_depth:
-                depths[v] = depths.get(u, 0) + 1
-                visited_depth.add(v)
-                queue.append(v)
+
+    # Create a base tree structure to ensure all nodes are connected and reachable.
+    for i in range(1, num_nodes):
+        # Pick a random existing node to be the parent.
+        parent = random.choice(nodes)
+        G.add_node(i)
+        G.add_edge(parent, i)
+        nodes.append(i)
+        depths[i] = depths[parent] + 1
 
     # Add extra edges to increase graph complexity.
     num_extra_edges = int(num_nodes * extra_edge_factor)
@@ -158,14 +160,12 @@ def _generate_base_rdag(num_nodes, extra_edge_factor, async_prob):
 
     for u, v in G.edges():
         G.edges[u, v]['weight'] = random.randint(min_w, max_w)
+        G.edges[u, v]['alpha'] = math.ceil(G.edges[u, v]['weight'] / N_INVOCATIONS)
         G.edges[u, v]['type'] = 'async' if random.random() < async_prob else 'sync'
 
     return G
 
-def generate_sync_rdag(num_nodes, extra_edge_factor=1.0):
-    """Generates a random rDAG with only synchronous edges."""
-    return _generate_base_rdag(num_nodes, extra_edge_factor, async_prob=0.0)
+def generate_sync_rdag(num_nodes, extra_edge_factor=1.0, N_INVOCATIONS=1000):
+    """Generates a random rDAG with only synchronous calls."""
+    return generate_async_rdag(num_nodes, extra_edge_factor, async_prob=0.0, N_INVOCATIONS=N_INVOCATIONS)
 
-def generate_async_rdag(num_nodes, extra_edge_factor=1.0, async_prob=0.2):
-    """Generates a random rDAG with a mix of synchronous and asynchronous edges."""
-    return _generate_base_rdag(num_nodes, extra_edge_factor, async_prob=async_prob)

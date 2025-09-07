@@ -6,7 +6,7 @@ import math
 from root_selector import run_root_selection_strategy
 from weighted_degree import select_weighted_degree_candidates
 from downstream_impact import select_downstream_candidate_roots
-from rdag import generate_async_rdag, preprocess_graph
+from rdag import generate_async_rdag, preprocess_graph, find_root
 from ilp import print_solution_details
 
 try:
@@ -16,7 +16,7 @@ except Exception as e:
     print(f"Warning: Could not set recursion depth: {e}")
 
 
-def run_comparison(name, graph, M, C, N, max_k,
+def run_comparison(name, graph, M, C, max_k,
                    # Approx params
                    num_root_candidates, beta, gamma, delta, rcl_size,
                    # Time/Gap params
@@ -33,7 +33,7 @@ def run_comparison(name, graph, M, C, N, max_k,
     """
     print(f"\n{'='*25} Running Comparison: {name} {'='*25}")
     print(f"Nodes: {len(graph)}, Edges: {len(graph.edges)}")
-    print(f"Constraints: M={M:.1f}, C={C:.1f}, N={N}")
+    print(f"Constraints: M={M:.1f}, C={C:.1f}")
     print(f"Max k: {max_k}, Approx Pool Size: {num_root_candidates}")
     print(f"Downstream Heuristic Weights: b={beta}, g={gamma}, d={delta}")
     print(f"GRASP Params: RCL Size={rcl_size}")
@@ -56,17 +56,18 @@ def run_comparison(name, graph, M, C, N, max_k,
     # of all edge weights in the graph.
     baseline_cost = sum(data.get('weight', 0) for _, _, data in graph.edges(data=True))
     # The result format matches the other strategies for consistent processing.
-    # (cost, R, assignment, limit_hit), duration
+    # (cost, R, assignment), duration
     # In the baseline, every node is its own "root" in its own container.
     results["Baseline"] = ((baseline_cost, set(graph.nodes()), None, False), 0.0)
 
     # --- Strategy 1: Optimal Solution ---
     # This is only run for small graphs (<= 25 nodes) due to its exponential complexity.
     if len(graph) <= 25:
+        print("Running Optimal Solution")
         start_opt = time.time()
         opt_res = run_root_selection_strategy(
             strategy_name="Optimal",
-            graph=graph, M=M, C=C, N=N,
+            graph=graph, M=M, C=C,
             root_node=root, all_nodes=nodes, predecessors=preds, full_reachable_from=reach,
             max_k=max_k,
             candidate_selector_fn=None, # None means all nodes are candidates
@@ -80,14 +81,16 @@ def run_comparison(name, graph, M, C, N, max_k,
         results["Optimal"] = (None, 0.0)
 
     # --- Strategy 2: Downstream Impact Heuristic ---
+
+    print("Running Downstream Impact")
     start_ds = time.time()
     ds_args = {
-        'num_candidates': num_root_candidates, 'M': M, 'C': C, 'N': N,
+        'num_candidates': num_root_candidates, 'M': M, 'C': C,
         'beta': beta, 'gamma': gamma, 'delta': delta, 'rcl_size': rcl_size
     }
     ds_res = run_root_selection_strategy(
         strategy_name="Downstream Impact Approx",
-        graph=graph, M=M, C=C, N=N,
+        graph=graph, M=M, C=C,
         root_node=root, all_nodes=nodes, predecessors=preds, full_reachable_from=reach,
         max_k=max_k,
         candidate_selector_fn=select_downstream_candidate_roots,
@@ -101,11 +104,12 @@ def run_comparison(name, graph, M, C, N, max_k,
     results["Downstream Impact"] = (ds_res, time.time() - start_ds)
 
     # --- Strategy 3: Weighted In-Degree Heuristic ---
+    print("Running Weighted In-Degree Heuristic")
     start_wd = time.time()
     wd_args = {'num_candidates': num_root_candidates, 'rcl_size': rcl_size}
     wd_res = run_root_selection_strategy(
         strategy_name="Weighted Degree Approx",
-        graph=graph, M=M, C=C, N=N,
+        graph=graph, M=M, C=C,
         root_node=root, all_nodes=nodes, predecessors=preds, full_reachable_from=reach,
         max_k=max_k,
         candidate_selector_fn=select_weighted_degree_candidates,
@@ -129,11 +133,9 @@ def run_comparison(name, graph, M, C, N, max_k,
         if strategy not in results: continue
         
         result_data, duration = results[strategy]
-        cost, R, assign, limit_hit = result_data if result_data else (None, None, None, False)
+        cost, R, assign = result_data if result_data else (None, None, None, False)
         print(f"Strategy: {strategy}")
         print(f"  Execution Time: {duration:.2f}s")
-        if limit_hit:
-            print(f"  NOTE: Stopped early due to combination threshold.")
         if cost is not None:
             print(f"  Best Cost Found: {cost:.4f}")
             if R:
@@ -151,7 +153,7 @@ def run_comparison(name, graph, M, C, N, max_k,
         print(f"\n--- Details for Best Overall Solution Found ({best_overall_strategy}) ---")
         best_result_data, _ = results[best_overall_strategy]
         _, best_R, best_assign, _ = best_result_data
-        print_solution_details(graph, M, C, N, best_R, best_assign)
+        print_solution_details(graph, best_R, best_assign, M, C)
     else:
         print("\nNo feasible solution found by any merging strategy.")
 
@@ -160,8 +162,8 @@ def run_comparison(name, graph, M, C, N, max_k,
     final_results = {}
     for strategy, (result_data, duration) in results.items():
         if result_data:
-            cost, R, _, limit_hit = result_data
-            final_results[strategy] = ([cost, R, limit_hit], duration)
+            cost, R, _ = result_data
+            final_results[strategy] = ([cost, R], duration)
         else:
             final_results[strategy] = (None, duration)
 
@@ -188,8 +190,8 @@ def save_results(final_result, filename="merge_decision_result.json"):
 if __name__ == "__main__":
 
     # --- Experiment Configuration ---
-    NUM_TRIALS = 100
-    NUM_NODES = [5, 10, 15, 20, 25, 50, 100, 200, 400, 800]
+    NUM_TRIALS = 3
+    NUM_NODES = [20, 25] #, 50, 100, 200, 400, 800]
     NUM_THREADS = os.cpu_count()    # Use all available CPU cores for parallel ILP solves
 
     # Parameters of the random graphs
@@ -210,7 +212,7 @@ if __name__ == "__main__":
                                     #        solution as feasbile. 
 
     # Optimal solution settings
-    MAX_K = 8                       # Max number of subgraphs to consider for the optimal solution
+    MAX_K = 8                  # Max number of subgraphs to consider for the optimal solution
     OPTIMAL_COMBINATION_THRESHOLD = 150000 # Safety limit for the optimal solver so it doesn't take forever
 
     # Weights for the Downstream Impact Heuristic score
@@ -220,13 +222,12 @@ if __name__ == "__main__":
 
     # GRASP parameters
     NUM_CANDIDATES = 15             # Size of the initial root candidate pool for heuristics
-    RCL_SIZE = 5                    # Size of the Restricted Candidate List
+    RCL_SIZE = 8                    # Size of the Restricted Candidate List
 
     # Gurobi solver parameters
     TIME_LIMIT_OPTIMAL = 180.0      # Time limit for the slow, optimal solver
     TIME_LIMIT_APPROX = 20.0        # Time limit for the faster, heuristic-based ILP solves
     ILP_MIP_GAP_APPROX = 0.30       # Allow heuristic solves to stop if within 30% of the optimal bound
-
 
 
     # --- Experiment Execution ---
@@ -240,33 +241,36 @@ if __name__ == "__main__":
         # greedy refinement strategy described in Appendix B.4.
         heuristic_mode = 'combinatorial'
         if num_nodes > 10:
-            heuristic_mode = 'greedy_refine'
+            heuristic_mode = 'greedy'
             print(f"\nINFO: Large graph detected ({num_nodes} nodes). Heuristic Strategy Mode: {heuristic_mode}.")
 
 
         # Generate the graphs and the container constraints, then run the experiment
         for trial in range(NUM_TRIALS):
-            G = generate_async_rdag(num_nodes, EDGE_FACTOR, ASYNC_PROB)
+            G = generate_async_rdag(num_nodes, EDGE_FACTOR, ASYNC_PROB, N_INVOCATIONS=N_INVOCATIONS)
 
             # Dynamically calculate reasonable M and C constraints for the generated graph.
             # This ensures the problem is non-trivial (not everything can be merged into one group).
-            total_m_base = sum(d.get('m', 0) for _, d in G.nodes(data=True))
-            total_c_base = sum(d.get('c', 0) for _, d in G.nodes(data=True))
-            async_penalty_m, async_penalty_c = 0, 0
-            for u, v, data in G.edges(data=True):
-                if data.get('type') == 'async':
-                    alpha_uv = math.ceil(data.get('weight', 0) / N_INVOCATIONS)
-                    if alpha_uv > 1:
-                        async_penalty_m += G.nodes[v]['m'] * (alpha_uv - 1)
-                        async_penalty_c += G.nodes[v]['c'] * (alpha_uv - 1)
+            root_node = find_root(G)
 
-            M = int(math.ceil((total_m_base + async_penalty_m) / CONSTRAINT_FACTOR))
-            C = int(math.ceil((total_c_base + async_penalty_c) / CONSTRAINT_FACTOR))
+            total_m = G.nodes[root_node]['m']
+            total_c = G.nodes[root_node]['c']
+            for u, v, data in G.edges(data=True):
+
+                alpha_uv = math.ceil(data.get('weight', 0) / N_INVOCATIONS)
+                total_c += G.nodes[v]['c'] * alpha_uv
+                total_m += G.nodes[v]['m']
+
+                if data.get('type') == 'async':
+                        total_m += G.nodes[v]['m'] * (alpha_uv - 1)
+
+            M = int(math.ceil(total_m / CONSTRAINT_FACTOR))
+            C = int(math.ceil(total_c / CONSTRAINT_FACTOR))
 
             # Run the full comparison for this single generated graph.
             result = run_comparison(
                 name=f"Comparison ({num_nodes} nodes, trial {trial})",
-                graph=G, M=M, C=C, N=N_INVOCATIONS, max_k=MAX_K,
+                graph=G, M=M, C=C, max_k=MAX_K,
                 num_root_candidates=NUM_CANDIDATES,
                 beta=BETA, gamma=GAMMA, delta=DELTA, rcl_size=RCL_SIZE,
                 time_limit_optimal=TIME_LIMIT_OPTIMAL,

@@ -21,7 +21,7 @@ def get_descendants(graph, node, memo):
     memo[node] = descendants
     return descendants
 
-def select_downstream_candidate_roots(graph, root_node, num_candidates, M, C, N, beta, gamma, delta, rcl_size=1, **kwargs):
+def select_downstream_candidate_roots(graph, root_node, num_candidates, M, C, beta, gamma, delta, rcl_size=1, **kwargs):
     """
     Selects promising root candidates using the Downstream Impact Heuristic (DIH), as
     formalized in Appendix B of the Quilt paper. This heuristic is designed to find
@@ -32,83 +32,48 @@ def select_downstream_candidate_roots(graph, root_node, num_candidates, M, C, N,
         graph: The workflow graph.
         root_node: The main entry point of the graph, which is always a root.
         num_candidates (int): The number of additional root candidates to select.
-        M, C, N: The memory, CPU, and invocation count constraints.
+        M, C: The memory and CPU constraints.
         beta, gamma, delta: Weights for the three components of the DIH score.
-        rcl_size (int): The size of the Restricted Candidate List for GRASP. A value > 1
-                        introduces randomness to help escape local optima.
+        rcl_size (int): The size of the Restricted Candidate List for GRASP selection.
+        **kwargs: Catches extra arguments that might be passed by the framework.
 
     Returns:
-        A tuple containing:
-        - set: The set of selected candidate nodes.
-        - list: A list of all potential candidates and their scores, used for greedy refinement.
+        A tuple containing the set of selected root candidates and a list of all scores.
     """
-    if num_candidates <= 0:
-        return set(), []
-
-    if M <= 0 or C <= 0 or N <= 0:
-        print("Warning: M, C, or N are <= 0. Cannot use downstream heuristic.")
-        return set(), []
-
     nodes_to_consider = [n for n in graph.nodes() if n != root_node]
     if not nodes_to_consider:
         return set(), []
 
-    # --- Step 1: Pre-calculate Descendant Sets and their Resource Costs ---
-    # This is the most computationally intensive part, but it's done only once.
-    descendant_memo = {}
-    all_descendants = {}
-    # A topological sort ensures we process nodes in an order that maximizes memoization hits.
-    try:
-        nodes_in_order = list(nx.topological_sort(graph))
-        nodes_in_order.reverse() # Process from leaves up to roots
-        for node in nodes_in_order:
-            if node not in all_descendants:
-                all_descendants[node] = get_descendants(graph, node, descendant_memo)
-    except Exception: # Fallback for graphs with cycles (though they should be pre-filtered)
-        for node in graph.nodes():
-            if node not in all_descendants:
-                all_descendants[node] = get_descendants(graph, node, descendant_memo)
+    # --- Step 1: Pre-computation ---
+    memo = {}
+    all_descendants = {j: get_descendants(graph, j, memo) for j in nodes_to_consider}
+    
+    weighted_in_degree = {j: sum(graph.edges[u, j].get('weight', 0) for u in graph.predecessors(j)) for j in nodes_to_consider}
+    max_w_in = max(weighted_in_degree.values()) if weighted_in_degree else 0
 
-    downstream_m, downstream_c, weighted_in_degree = {}, {}, {}
-    max_w_in = 0.0
+    downstream_m = {}
+    downstream_c = {}
 
-    # For each potential candidate, calculate its total downstream resource impact.
+    # --- Step 2: Calculate Downstream Impact Scores ---
     for j in nodes_to_consider:
-        desc_nodes = all_descendants.get(j, {j})
-        # Base resource cost is the sum of all functions reachable from j.
-        ds_m_base = sum(graph.nodes[x].get('m', 0) for x in desc_nodes)
-        ds_c_base = sum(graph.nodes[x].get('c', 0) for x in desc_nodes)
+        D_j = all_descendants[j]
+        edges_in_descendants = [(u, v) for u, v in graph.edges() if u in D_j and v in D_j]
+        async_edges_in_descendants = [(u, v) for u, v, data in graph.edges(data=True) if data.get('type') == 'async' and u in D_j and v in D_j]
 
-        # Calculate the additional resource penalty from internal asynchronous calls.
-        # This models the peak resource usage when multiple instances of a function are
-        # invoked concurrently within the same merged process.
-        async_penalty_m, async_penalty_c = 0, 0
-        internal_async_edges = [(u, v) for u, v, d in graph.edges(data=True)
-                                if u in desc_nodes and v in desc_nodes and d.get('type') == 'async']
-        for u, v in internal_async_edges:
-            alpha_uv = math.ceil(graph.edges[u, v].get('weight', 0) / N)
-            if alpha_uv > 1:
-                async_penalty_m += graph.nodes[v]['m'] * (alpha_uv - 1)
-                async_penalty_c += graph.nodes[v]['c'] * (alpha_uv - 1)
+        # CPU Calculation
+        downstream_c[j] = graph.nodes[j]['c'] + sum(
+            graph.edges[u, v]['alpha'] * graph.nodes[v]['c']
+            for u, v in edges_in_descendants
+        )
 
-        downstream_m[j] = ds_m_base + async_penalty_m
-        downstream_c[j] = ds_c_base + async_penalty_c
-
-        # Calculate the weighted in-degree (the sum of weights of all incoming edges).
-        w_in = sum(graph.edges[i, j].get('weight', 1.0) for i in graph.predecessors(j))
-        weighted_in_degree[j] = w_in
-        max_w_in = max(max_w_in, w_in)
-
-    # --- Step 2: Calculate Final DIH Scores ---
-    # The score for each node is a weighted sum of three normalized components.
-    # The weights for memory and CPU are adjusted based on the overall "pressure" -
-    # if the graph is very memory-intensive, the memory component of the score is given more weight.
-    total_m = sum(d.get('m', 0) for _, d in graph.nodes(data=True))
-    total_c = sum(d.get('c', 0) for _, d in graph.nodes(data=True))
-    mem_pressure = total_m / (M + EPSILON)
-    cpu_pressure = total_c / (C + EPSILON)
-    gamma_adjusted = gamma * (1 + mem_pressure)
-    delta_adjusted = delta * (1 + cpu_pressure)
+        # Memory Calculation
+        downstream_m[j] = graph.nodes[j]['m'] + sum(
+            graph.nodes[v]['m']
+            for u, v in edges_in_descendants
+        ) + sum(
+            (graph.edges[u, v]['alpha'] - 1) * graph.nodes[v]['m']
+            for u, v in async_edges_in_descendants
+        )
 
     scores = []
     for j in nodes_to_consider:
@@ -119,15 +84,17 @@ def select_downstream_candidate_roots(graph, root_node, num_candidates, M, C, N,
         # 3. Normalized downstream CPU impact
         norm_ds_c = downstream_c.get(j, 0.0) / (C + EPSILON)
 
-        score = beta * norm_w_in + gamma_adjusted * norm_ds_m + delta_adjusted * norm_ds_c
+        score = beta * norm_w_in + gamma * norm_ds_m + delta * norm_ds_c
         scores.append((j, score))
 
     scores.sort(key=lambda item: item[1], reverse=True)
 
     # --- Step 3: Iterative GRASP Selection ---
-    # Instead of just picking the top N candidates greedily, we use GRASP.
-    # We build a "Restricted Candidate List" (RCL) of the top `rcl_size` candidates
-    # and then *randomly* select one. This is repeated until we have `num_candidates`.
+    # If num_candidates is 0, we are only being asked for the scores, not to select candidates.
+    if num_candidates <= 0:
+        return set(), scores
+
+    # Otherwise, proceed with GRASP selection.
     candidates = set()
     remaining_scores = scores[:]
 
@@ -142,8 +109,8 @@ def select_downstream_candidate_roots(graph, root_node, num_candidates, M, C, N,
 
         chosen_node, _ = random.choice(rcl)
         candidates.add(chosen_node)
-
-        # Remove the chosen candidate so it can't be picked again.
+        
+        # Remove the chosen node so it cannot be selected again.
         remaining_scores = [item for item in remaining_scores if item[0] != chosen_node]
 
     return candidates, scores
