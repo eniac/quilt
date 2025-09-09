@@ -383,9 +383,12 @@ cd quilt/dockerfiles/Env/c-env
   + make sure you have Fission successfully setup
 
 ```bash
-cd quilt/merge_func/merge-c-fanout/example/caller && ./build.sh build && ./build.sh deploy
-cd quilt/merge_func/merge-c-fanout/example/callee && ./build.sh build && ./build.sh deploy
-cd quilt/merge_func/merge-c-fanout/example/merge_script && ./build.sh merge && ./build.sh deploy
+cd quilt/merge_func/merge-c-fanout/example/caller \
+  && ./build.sh build && ./build.sh deploy
+cd quilt/merge_func/merge-c-fanout/example/callee \
+  && ./build.sh build && ./build.sh deploy
+cd quilt/merge_func/merge-c-fanout/example/merge_script \
+  && ./build.sh merge && ./build.sh deploy
 ```
 
 - Run wrk2 tests
