@@ -177,7 +177,7 @@ Run the following in the **provisioning node**.
 cd quilt/test/wrk2_fission && make
 ```
 
-### Figure 7 experiment
+### Figure 6 experiment
 - the value of each bar can be tested seperately
 - the following script measures the 50th percentile latency of baseline compose-post async
 - the result is recorded in `output_compose-post-async_1.log`
@@ -207,7 +207,7 @@ cd quilt/test/wrk2_fission/media_microservice
 ./figure7.sh perf compose-review-merged sync
 ```
 
-### Figure 8(a)(b) experiment
+### Figure 7(a)(b) experiment
 
 - Each curve can be tested seperately
 - For Figure 8 and Figure 9(a), if the curve does not exhibit the expected trend, you may try using smaller connection numbers in the corresponding script. For example, consider adjusting the values [here](https://github.com/eniac/quilt/blob/main/test/wrk2_fission/social_network/figure8ab.sh#L31) to smaller ones if the throughput vs. latency curve for social_network does not follow the expected shape.
@@ -276,7 +276,7 @@ cd quilt/test/wrk2_fission/social_network
 ./getlattput.py
 ```
 
-### Figure 8(c) experiment
+### Figure 7(c) experiment
 
 #### To test the baseline curve
 
@@ -322,7 +322,7 @@ cd quilt/benchmark/DeathStarBench_fakedb/hotel_reservation_async/merge
 ./getlattput.py
 ```
 
-### Figure 9(a) experiment
+### Figure 8(a) experiment
 
 - run the following command to get one noop curve with ingress nginx enabled.
 
@@ -341,7 +341,7 @@ cd quilt/test/wrk2_fission/social_network
 
 - turn off the ingress controller by setting `ingress-enable="false"` in the first `kubectl` command to get another noop curve
 
-### Figure 9(c) experiment
+### Figure 8(c) experiment
 
 ```bash
 # First, navigate to the application directory corresponding to the workflow
@@ -359,7 +359,7 @@ cd quilt/benchmark/DeathStarBench_fakedb/social_network/merge
   + [page-service](https://github.com/eniac/quilt/blob/main/benchmark/DeathStarBench_fakedb/media_microservice/merge/funcTrees/funcTree.page_service) (6 functions)
   + [read-home-timeline](https://github.com/eniac/quilt/blob/main/benchmark/DeathStarBench_fakedb/social_network_async/merge/funcTrees/funcTree.read_home_timeline) (2 functions)
 
-### Figure 9(b) and 10 experiment
+### Figure 8(b) and 9 experiment
 
 - See the [merge_solver](https://github.com/eniac/quilt/tree/main/merge_solver) subdirectory for instructions on how to reproduce the merge solver's results.
 
@@ -367,3 +367,35 @@ cd quilt/benchmark/DeathStarBench_fakedb/social_network/merge
 Quilt is able to merge functions across various languages. We give two examples here if you are interested. We will be cleaning up the code for the many other examples in the coming days. We did not report any cross-language experiments in our evaluation, so there is nothing to reproduce.
 - [Merge Swift caller and Rust callee](https://github.com/eniac/quilt/blob/main/merge_func/merge-swift-and-rust)
 - [Merge Rust caller and Swift callee](https://github.com/eniac/quilt/tree/main/merge_func/merge-rust-and-swift)
+
+### Figure 10 experiment
+
+- Build LLVM-17 compiler image and fission-env for C/C++
+
+```bash
+cd quilt/dockerfiles/LLVM/llvm-17
+./build.sh llvm
+cd quilt/dockerfiles/Env/c-env
+./build.sh
+```
+
+- Generate Function Images and Deploy Functions
+  + make sure you have Fission successfully setup
+
+```bash
+cd quilt/merge_func/merge-c-fanout/example/caller && ./build.sh build && ./build.sh deploy
+cd quilt/merge_func/merge-c-fanout/example/callee && ./build.sh build && ./build.sh deploy
+cd quilt/merge_func/merge-c-fanout/example/merge_script && ./build.sh merge && ./build.sh deploy
+```
+
+- Run wrk2 tests
+
+```bash
+cd quilt/test/wrk2_fission/c_fanout
+# to measure baseline performance
+./test_qps_pthread.sh perf c-caller
+# to measure Quilt bars
+./test_qps_pthread.sh perf c-pthread
+# to measure Quilt (no conditional) - we set the threshold to 100
+./test_qps_pthread.sh perf c-pthread-100
+```
