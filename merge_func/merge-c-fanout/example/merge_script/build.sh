@@ -7,7 +7,7 @@ DOCKERFILE_DIR=$ROOT_DIR/../../../dockerfiles/LLVM
 ARGS=("$@")
 
 CALLER=${ARGS[1]}
-FUNC=c-pthread-merged
+FUNC=c-pthread-merged-100
 
 function merge {
   rm -rf temp && mkdir temp
@@ -26,9 +26,9 @@ function merge {
 function deploy {
   fission function run-container --name $FUNC \
       --image docker.io/zyuxuan0115/$FUNC \
-      --minscale=1 --maxscale=30 \
-      --minmemory=1 --maxmemory=64 \
-      --mincpu=1  --maxcpu=2000 \
+      --minscale=1 --maxscale=5 \
+      --minmemory=1 --maxmemory=80 \
+      --mincpu=1  --maxcpu=8000 \
       --port 8888 \
       --namespace fission-function
   fission httptrigger create --method POST \
@@ -38,7 +38,7 @@ function deploy {
 
 function invoke {
   curl -XPOST http://localhost:8888/$FUNC \
-  -d '{"iter_count":20}'
+  -d '{"iter_count":13}'
 }
 
 case "$1" in
