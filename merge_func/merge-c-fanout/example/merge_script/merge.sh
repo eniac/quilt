@@ -1,7 +1,8 @@
 #!/usr/bin/bash
 
 LLVM_DIR=/llvm/bin
-FANOUT=100
+ARGS=("$@")
+FANOUT=${ARGS[1]}
 
 function compile {
   $LLVM_DIR/clang -emit-llvm -S -O1 -o caller.ll caller/function.cpp

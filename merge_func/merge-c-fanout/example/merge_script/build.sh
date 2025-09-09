@@ -6,7 +6,7 @@ echo $ROOT_DIR
 DOCKERFILE_DIR=$ROOT_DIR/../../../dockerfiles/LLVM
 ARGS=("$@")
 
-CALLER=${ARGS[1]}
+FANOUT=${ARGS[1]}
 FUNC=c-pthread-merged-100
 
 function merge {
@@ -15,6 +15,7 @@ function merge {
   cp -r ../callee temp
   cp -r merge.sh temp
   sudo docker build --no-cache -t zyuxuan0115/$FUNC:latest \
+    --build-arg FANOUT=$FANOUT \
     -f Dockerfile \
     temp
   rm -rf temp
