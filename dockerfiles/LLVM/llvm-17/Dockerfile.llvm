@@ -14,12 +14,12 @@ RUN wget https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-17.0.5.t
     && tar -vxf llvmorg-17.0.5.tar.gz \
     && mv llvm-project-llvmorg-17.0.5 llvm-project
 
-RUN git clone https://github.com/eniac/quilt.git \
-    && cp /quilt/merge_func/merge-c-pthread/llvm-pass/MergeCPthread.h   /llvm-project/llvm/include/llvm/Transforms/Utils/ \
-    && cp /quilt/merge_func/merge-c-pthread/llvm-pass/MergeCPthread.cpp /llvm-project/llvm/lib/Transforms/Utils/ \
-    && cp /quilt/merge_func/merge-c-pthread/llvm-pass/CMakeLists.txt    /llvm-project/llvm/lib/Transforms/Utils/ \
-    && cp /quilt/merge_func/merge-c-pthread/llvm-pass/PassBuilder.cpp   /llvm-project/llvm/lib/Passes/ \
-    && cp /quilt/merge_func/merge-c-pthread/llvm-pass/PassRegistry.def  /llvm-project/llvm/lib/Passes/
+RUN git clone https://github.com/zyuxuan0115/quilt.git \
+    && cp /quilt/merge_func/merge-c-pthreads/llvm-pass/MergeCPthread.h   /llvm-project/llvm/include/llvm/Transforms/Utils/ \
+    && cp /quilt/merge_func/merge-c-pthreads/llvm-pass/MergeCPthread.cpp /llvm-project/llvm/lib/Transforms/Utils/ \
+    && cp /quilt/merge_func/merge-c-pthreads/llvm-pass/CMakeLists.txt    /llvm-project/llvm/lib/Transforms/Utils/ \
+    && cp /quilt/merge_func/merge-c-pthreads/llvm-pass/PassBuilder.cpp   /llvm-project/llvm/lib/Passes/ \
+    && cp /quilt/merge_func/merge-c-pthreads/llvm-pass/PassRegistry.def  /llvm-project/llvm/lib/Passes/
 
 RUN cd /llvm-project \
     && mkdir build && cd build \
@@ -38,8 +38,8 @@ RUN cd /quilt/merge_func/merge-rust-async/demangle_rust_funcname \
 FROM ubuntu:focal as final
 
 RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get update -y \
-  && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y build-essential curl zlib1g-dev python3 git nlohmann-json3-dev\
-  && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y ca-certificates pkg-config libssl-dev libcurl4-openssl-dev \
+  && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y build-essential curl zlib1g-dev python3 git \
+  && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y ca-certificates pkg-config libssl-dev libcurl4-openssl-dev nlohmann-json3-dev\
   && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC addgroup --system app && adduser -system app
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y
