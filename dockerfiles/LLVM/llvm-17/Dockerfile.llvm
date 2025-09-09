@@ -15,11 +15,11 @@ RUN wget https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-17.0.5.t
     && mv llvm-project-llvmorg-17.0.5 llvm-project
 
 RUN git clone https://github.com/zyuxuan0115/quilt.git \
-    && cp /quilt/merge_func/merge-c-pthreads/llvm-pass/MergeCPthread.h   /llvm-project/llvm/include/llvm/Transforms/Utils/ \
-    && cp /quilt/merge_func/merge-c-pthreads/llvm-pass/MergeCPthread.cpp /llvm-project/llvm/lib/Transforms/Utils/ \
-    && cp /quilt/merge_func/merge-c-pthreads/llvm-pass/CMakeLists.txt    /llvm-project/llvm/lib/Transforms/Utils/ \
-    && cp /quilt/merge_func/merge-c-pthreads/llvm-pass/PassBuilder.cpp   /llvm-project/llvm/lib/Passes/ \
-    && cp /quilt/merge_func/merge-c-pthreads/llvm-pass/PassRegistry.def  /llvm-project/llvm/lib/Passes/
+    && cp /quilt/merge_func/merge-c-fanout/llvm-pass/MergeCPthread.h   /llvm-project/llvm/include/llvm/Transforms/Utils/ \
+    && cp /quilt/merge_func/merge-c-fanout/llvm-pass/MergeCPthread.cpp /llvm-project/llvm/lib/Transforms/Utils/ \
+    && cp /quilt/merge_func/merge-c-fanout/llvm-pass/CMakeLists.txt    /llvm-project/llvm/lib/Transforms/Utils/ \
+    && cp /quilt/merge_func/merge-c-fanout/llvm-pass/PassBuilder.cpp   /llvm-project/llvm/lib/Passes/ \
+    && cp /quilt/merge_func/merge-c-fanout/llvm-pass/PassRegistry.def  /llvm-project/llvm/lib/Passes/
 
 RUN cd /llvm-project \
     && mkdir build && cd build \
