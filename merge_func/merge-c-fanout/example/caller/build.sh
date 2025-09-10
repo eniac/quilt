@@ -1,6 +1,6 @@
 #!/bin/bash
 
-FUNC=c-caller-34
+FUNC=c-caller
 
 function build {
   sudo docker build --no-cache -t zyuxuan0115/$FUNC:latest -f Dockerfile . 
