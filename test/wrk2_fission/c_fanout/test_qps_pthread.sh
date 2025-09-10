@@ -4,10 +4,7 @@ ARGS=("$@")
 FUNC_NAME=${ARGS[1]}
 WRK_SCRIPT="lua_files/$FUNC_NAME.lua"
 WRK_BIN=../wrk
-DEATHSTARBENCH=/home/zyuxuan/faas-test/DeathStarBench_fakedb
-SETUP_DIR=/home/zyuxuan/faas-test/setup
-TEST_DIR=/home/zyuxuan/faas-test/test
-WORKLOAD=social_network_rust_lite
+
 # You only need to change this line
 QPS=100000
 

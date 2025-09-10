@@ -31,7 +31,7 @@ counter = 0
 request = function(req_id)
 
   local method = "POST"
-  local path = "/c-pthread-merged-100"
+  local path = "/c-pthread-merged-9999"
   local headers = {}
   local body
   headers["Content-Type"] = "application/json"
@@ -39,7 +39,7 @@ request = function(req_id)
   body = '{"iter_count":5}'
 
   local body_write = body .. '\n'
-  file = io.open('req_data_log_c-pthread.txt', 'a')
+  file = io.open('req_data_log_c-pthread-9999.txt', 'a')
   file:write(body_write)
   file:close()
 
