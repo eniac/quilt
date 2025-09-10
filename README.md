@@ -49,6 +49,7 @@ cd quilt
 
 - Edit [setup/serverless_runtime/machine.json](https://github.com/eniac/quilt/blob/main/setup/serverless_runtime/machine.json):
   + Update the information of cluster nodes to be consistent with the above.
+  + Note: The `name` field must match the output of `hostname` command on the corresponding machine.
 
 - Edit [setup/prerequisite/build.sh](https://github.com/eniac/quilt/blob/main/setup/prerequisite/build.sh)
   + Modify `$USER`
