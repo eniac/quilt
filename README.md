@@ -381,14 +381,21 @@ cd quilt/dockerfiles/Env/c-env
 
 - Generate Function Images and Deploy Functions
   + make sure you have Fission successfully setup
+  + the number 6 after `./build.sh merge` is the threshold, you can set it to other numbers.
 
 ```bash
+# build the caller image
 cd quilt/merge_func/merge-c-fanout/example/caller \
   && ./build.sh build && ./build.sh deploy
+# build the callee image
 cd quilt/merge_func/merge-c-fanout/example/callee \
   && ./build.sh build && ./build.sh deploy
+# build the merged image
 cd quilt/merge_func/merge-c-fanout/example/merge_script \
-  && ./build.sh merge && ./build.sh deploy
+  && ./build.sh merge 6 && ./build.sh deploy
+# build the merged (no conditional) image
+cd quilt/merge_func/merge-c-fanout/example/merge_script \
+  && ./build.sh merge_no_cond && ./build.sh deploy
 ```
 
 - Run wrk2 tests
