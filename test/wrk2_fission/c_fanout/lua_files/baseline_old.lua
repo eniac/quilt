@@ -10,9 +10,6 @@ local charset = {'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', 'a', 's',
 
 local decset = {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0'}
 
--- default, overridable via first script arg
-local iter_count = 5
-
 local function stringRandom(length)
   if length > 0 then
     return stringRandom(length - 1) .. charset[math.random(1, #charset)]
@@ -29,19 +26,20 @@ local function decRandom(length)
   end
 end
 
+counter = 0
+
 request = function(req_id)
 
   local method = "POST"
-  local path = "/c-caller"
+  local path = "/c-caller-34"
   local headers = {}
   local body
   headers["Content-Type"] = "application/json"
 
-  -- use iter_count from arg or default
-  body = string.format('{"iter_count":%d}', iter_count)
+  body = '{"iter_count":5}'
 
   local body_write = body .. '\n'
-  file = io.open('req_baseline.txt', 'a')
+  file = io.open('req_data_log_c-caller.txt', 'a')
   file:write(body_write)
   file:close()
 
@@ -58,16 +56,10 @@ response = function(status, headers, body)
       io.write("Response with status: ".. status .."\n")
       io.write("------------------------------\n")
       io.write("[response] Body:\n")
-      io.write((body or "") .. "\n")
+      io.write(body .. "\n")
   end
 end
 
--- wrk passes script args here: wrk ... -s script.lua ... -- <arg1>
-function init(args)
-  -- (simple seed)
-  math.randomseed(os.time())
-  if args and args[1] then
-    local n = tonumber(args[1])
-    if n then iter_count = n end
-  end
+function init(rand_seed)
+  math.randomseed(rand_seed)
 end
