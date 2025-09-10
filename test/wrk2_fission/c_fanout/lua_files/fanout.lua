@@ -10,6 +10,9 @@ local charset = {'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', 'a', 's',
 
 local decset = {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0'}
 
+-- default, overridable via first script arg
+local iter_count = 5
+
 local function stringRandom(length)
   if length > 0 then
     return stringRandom(length - 1) .. charset[math.random(1, #charset)]
@@ -26,8 +29,6 @@ local function decRandom(length)
   end
 end
 
-counter = 0
-
 request = function(req_id)
 
   local method = "POST"
@@ -36,7 +37,8 @@ request = function(req_id)
   local body
   headers["Content-Type"] = "application/json"
 
-  body = '{"iter_count":5}'
+  -- use iter_count from arg or default
+  body = string.format('{"iter_count":%d}', iter_count)
 
   local body_write = body .. '\n'
   file = io.open('req_data_log_c-pthread.txt', 'a')
@@ -60,6 +62,17 @@ response = function(status, headers, body)
   end
 end
 
-function init(rand_seed)
-  math.randomseed(rand_seed)
+-- Support both init(seed) and init(args) (some wrk builds pass a number)
+function init(a, b)
+  local seed, args_tbl
+  if type(a) == "number" then seed = a
+  elseif type(a) == "table" then args_tbl = a end
+  if type(b) == "table" then args_tbl = b end
+
+  if seed then math.randomseed(seed) else math.randomseed(os.time()) end
+
+  if args_tbl and args_tbl[1] then
+    local n = tonumber(args_tbl[1])
+    if n then iter_count = n end
+  end
 end
