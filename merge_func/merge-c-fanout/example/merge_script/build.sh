@@ -7,7 +7,7 @@ DOCKERFILE_DIR=$ROOT_DIR/../../../dockerfiles/LLVM
 ARGS=("$@")
 
 FANOUT=${ARGS[1]}
-FUNC=c-pthread-merged-100
+FUNC=c-pthread-merged
 
 function merge {
   rm -rf temp && mkdir temp
@@ -21,6 +21,20 @@ function merge {
   rm -rf temp
   sudo docker system prune -f
   sudo docker push zyuxuan0115/$FUNC:latest
+}
+
+function merge_no_cond {
+  rm -rf temp && mkdir temp
+  cp -r ../caller temp
+  cp -r ../callee temp
+  cp -r merge.sh temp
+  sudo docker build --no-cache -t zyuxuan0115/$FUNC-9999:latest \
+    --build-arg FANOUT=9999 \
+    -f Dockerfile \
+    temp
+  rm -rf temp
+  sudo docker system prune -f
+  sudo docker push zyuxuan0115/$FUNC-9999:latest
 }
 
 
@@ -45,6 +59,9 @@ function invoke {
 case "$1" in
 merge)
     merge
+    ;;
+merge_no_cond)
+    merge_no_cond
     ;;
 deploy)
     deploy
