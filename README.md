@@ -385,12 +385,12 @@ cd quilt/dockerfiles/Env/c-env
   + the number 6 after `./build.sh merge` is the threshold, you can set it to other numbers.
 
 ```bash
-# build the caller image and deploy
+# build the caller image and deploythe the function
 cd quilt/merge_func/merge-c-fanout/example/caller \
-  && ./build.sh build && ./build.sh deploy the function
-# build the callee image and deploy
+  && ./build.sh build && ./build.sh deploy
+# build the callee image and deploy the function
 cd quilt/merge_func/merge-c-fanout/example/callee \
-  && ./build.sh build && ./build.sh deploy the function
+  && ./build.sh build && ./build.sh deploy
 # build the merged images (both conditional and no-conditional versions are built)
 # and deploy the functions
 cd quilt/merge_func/merge-c-fanout/example/merge_script \
