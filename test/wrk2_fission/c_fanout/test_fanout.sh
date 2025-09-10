@@ -1,17 +1,20 @@
 #!/bin/bash
 
 ARGS=("$@")
-FUNC_NAME=${ARGS[1]}
+FUNC_NAME=${ARGS[0]}
+ITER_COUNT=${ARGS[1]}
 WRK_SCRIPT="lua_files/$FUNC_NAME.lua"
 WRK_BIN=../wrk
+
+echo $FUNC_NAME
+echo $ITER_COUNT
 
 # You only need to change this line
 QPS=100000
 
-
 if [ "$#" -lt 2 ]; then
   echo "Error: Missing command line argument."
-  echo 'example: `./test_qps.sh perf c-pthread`'
+  echo 'example: `./test_fanout.sh baseline 5`'
   exit 1
 fi
 
@@ -24,18 +27,15 @@ function measure_perf {
     PORT=$(kubectl get svc router -n fission -o jsonpath='{.spec.ports[0].nodePort}')
     ENTRY_HOST=http://$IP:$PORT
     $WRK_BIN -t 1 -c $con -d 60 -L -U \
-	   -s $WRK_SCRIPT \
-	   $ENTRY_HOST -R $QPS 2>/dev/null > output_${ARGS[1]}-${ARGS[2]}_$con.log
+	   -s $WRK_SCRIPT -R $QPS \
+	   $ENTRY_HOST -- $ITER_COUNT 2>/dev/null > output_${ARGS[0]}_${ARGS[1]}.log
     echo "===== Connections: $con ====="
     echo "connections: $con done"
     echo "============================"
   done
 }
 
+measure_perf
 
 
-case "$1" in
-perf)
-    measure_perf
-    ;;
-esac
+

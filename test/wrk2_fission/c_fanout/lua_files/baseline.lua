@@ -62,12 +62,23 @@ response = function(status, headers, body)
   end
 end
 
--- wrk passes script args here: wrk ... -s script.lua ... -- <arg1>
-function init(args)
-  -- (simple seed)
-  math.randomseed(os.time())
-  if args and args[1] then
-    local n = tonumber(args[1])
+function init(a, b)
+  -- Some wrk builds: init(<number seed>)
+  -- Others:          init(<table args>)
+  -- Some forks:      init(<number seed>, <table args>)
+  local seed, args_tbl
+
+  if type(a) == "number" then seed = a
+  elseif type(a) == "table" then args_tbl = a end
+
+  if type(b) == "table" then args_tbl = b end
+
+  -- seed RNG
+  if seed then math.randomseed(seed) else math.randomseed(os.time()) end
+
+  -- parse first script arg for iter_count
+  if args_tbl and args_tbl[1] then
+    local n = tonumber(args_tbl[1])
     if n then iter_count = n end
   end
 end
