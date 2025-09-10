@@ -404,8 +404,11 @@ cd quilt/merge_func/merge-c-fanout/example/merge_script \
 cd quilt/test/wrk2_fission/c_fanout
 # measure baseline performance
 ./test_fanout.sh baseline 5
+./test_fanout.sh baseline 13
 # measure Quilt performance
 ./test_fanout.sh fanout 5
+./test_fanout.sh fanout 13
 # measure Quilt (no conditional) performance - we set the threshold to 9999
 ./test_fanout.sh fanout-no-cond 5
+./test_fanout.sh fanout-no-cond 13
 ```
