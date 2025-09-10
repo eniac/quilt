@@ -390,12 +390,9 @@ cd quilt/merge_func/merge-c-fanout/example/caller \
 # build the callee image
 cd quilt/merge_func/merge-c-fanout/example/callee \
   && ./build.sh build && ./build.sh deploy
-# build the merged image
+# build the merged images (both conditional and no-conditional versions are built)
 cd quilt/merge_func/merge-c-fanout/example/merge_script \
   && ./build.sh merge 6 && ./build.sh deploy
-# build the merged (no conditional) image
-cd quilt/merge_func/merge-c-fanout/example/merge_script \
-  && ./build.sh merge_no_cond && ./build.sh deploy
 ```
 
 - Run wrk2 tests
@@ -403,9 +400,9 @@ cd quilt/merge_func/merge-c-fanout/example/merge_script \
 ```bash
 cd quilt/test/wrk2_fission/c_fanout
 # to measure baseline performance
-./test_qps_pthread.sh perf c-caller
+./test_qps_pthread.sh perf baseline
 # to measure Quilt bars
-./test_qps_pthread.sh perf c-pthread
+./test_qps_pthread.sh perf fanout-no-cond
 # to measure Quilt (no conditional) - we set the threshold to 100
-./test_qps_pthread.sh perf c-pthread-100
+./test_qps_pthread.sh perf fanout
 ```
