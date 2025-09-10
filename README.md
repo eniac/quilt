@@ -402,7 +402,7 @@ cd quilt/test/wrk2_fission/c_fanout
 # to measure baseline performance
 ./test_qps_pthread.sh perf baseline
 # to measure Quilt bars
-./test_qps_pthread.sh perf fanout-no-cond
-# to measure Quilt (no conditional) - we set the threshold to 100
 ./test_qps_pthread.sh perf fanout
+# to measure Quilt (no conditional) - we set the threshold to 100
+./test_qps_pthread.sh perf fanout-no-cond
 ```
