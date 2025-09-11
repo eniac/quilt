@@ -398,13 +398,17 @@ cd quilt/merge_func/merge-c-fanout/example/merge_script \
 ```
 
 - Run wrk2 tests
+  + the 5 at the end of each command means client wants the fanout from the caller to be 5
 
 ```bash
 cd quilt/test/wrk2_fission/c_fanout
 # measure baseline performance
-./test_fanout.sh perf baseline
+./test_fanout.sh baseline 5
+./test_fanout.sh baseline 13
 # measure Quilt performance
-./test_fanout.sh perf fanout
+./test_fanout.sh fanout 5
+./test_fanout.sh fanout 13
 # measure Quilt (no conditional) performance - we set the threshold to 9999
-./test_fanout.sh perf fanout-no-cond
+./test_fanout.sh fanout-no-cond 5
+./test_fanout.sh fanout-no-cond 13
 ```
