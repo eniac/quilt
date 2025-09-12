@@ -17,13 +17,13 @@ RUN wget https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-19.1.0.t
 RUN git clone https://github.com/eniac/quilt.git \
     && cp /quilt/merge_func/merge-rust-async/llvm_pass/MergeRustFuncAsync.h   /llvm-project/llvm/include/llvm/Transforms/Utils/ \
     && cp /quilt/merge_func/merge-rust-async/llvm_pass/MergeRustFuncAsync.cpp /llvm-project/llvm/lib/Transforms/Utils/ \
-    && cp /quilt/merge_func/merge-rust-async/llvm_pass/RemoveRedundant.h   /llvm-project/llvm/include/llvm/Transforms/Utils/ \
-    && cp /quilt/merge_func/merge-rust-async/llvm_pass/RemoveRedundant.cpp /llvm-project/llvm/lib/Transforms/Utils/ \
-    && cp /quilt/merge_func/merge-rust-func/llvm-pass/MergeRustFunc.h   /llvm-project/llvm/include/llvm/Transforms/Utils/ \
-    && cp /quilt/merge_func/merge-rust-func/llvm-pass/MergeRustFunc.cpp /llvm-project/llvm/lib/Transforms/Utils/ \
-    && cp /quilt/merge_func/CMakeLists.txt    /llvm-project/llvm/lib/Transforms/Utils/ \
-    && cp /quilt/merge_func/PassBuilder.cpp   /llvm-project/llvm/lib/Passes/ \
-    && cp /quilt/merge_func/PassRegistry.def  /llvm-project/llvm/lib/Passes/
+    && cp /quilt/merge_func/merge-rust-async/llvm_pass/RemoveRedundant.h      /llvm-project/llvm/include/llvm/Transforms/Utils/ \
+    && cp /quilt/merge_func/merge-rust-async/llvm_pass/RemoveRedundant.cpp    /llvm-project/llvm/lib/Transforms/Utils/ \
+    && cp /quilt/merge_func/merge-rust-func/llvm-pass/MergeRustFunc.h         /llvm-project/llvm/include/llvm/Transforms/Utils/ \
+    && cp /quilt/merge_func/merge-rust-func/llvm-pass/MergeRustFunc.cpp       /llvm-project/llvm/lib/Transforms/Utils/ \
+    && cp /quilt/merge_func/llvm-19/CMakeLists.txt                            /llvm-project/llvm/lib/Transforms/Utils/ \
+    && cp /quilt/merge_func/llvm-19/PassBuilder.cpp                           /llvm-project/llvm/lib/Passes/ \
+    && cp /quilt/merge_func/llvm-19/PassRegistry.def                          /llvm-project/llvm/lib/Passes/
 
 RUN cd /llvm-project \
     && mkdir build && cd build \
