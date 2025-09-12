@@ -15,11 +15,21 @@ RUN wget https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-17.0.5.t
     && mv llvm-project-llvmorg-17.0.5 llvm-project
 
 RUN git clone https://github.com/zyuxuan0115/quilt.git \
-    && cp /quilt/merge_func/merge-c-fanout/llvm-pass/MergeCPthread.h   /llvm-project/llvm/include/llvm/Transforms/Utils/ \
-    && cp /quilt/merge_func/merge-c-fanout/llvm-pass/MergeCPthread.cpp /llvm-project/llvm/lib/Transforms/Utils/ \
-    && cp /quilt/merge_func/merge-c-fanout/llvm-pass/CMakeLists.txt    /llvm-project/llvm/lib/Transforms/Utils/ \
-    && cp /quilt/merge_func/merge-c-fanout/llvm-pass/PassBuilder.cpp   /llvm-project/llvm/lib/Passes/ \
-    && cp /quilt/merge_func/merge-c-fanout/llvm-pass/PassRegistry.def  /llvm-project/llvm/lib/Passes/
+    && cp /quilt/merge_func/merge-c-fanout/llvm-pass/MergeCPthread.h             /llvm-project/llvm/include/llvm/Transforms/Utils/ \
+    && cp /quilt/merge_func/merge-c-fanout/llvm-pass/MergeCPthread.cpp           /llvm-project/llvm/lib/Transforms/Utils/ \
+    && cp /quilt/merge_func/merge-c-and-rust/llvm-pass/MergeCRustFunc.h          /llvm-project/llvm/include/llvm/Transforms/Utils/ \
+    && cp /quilt/merge_func/merge-c-and-rust/llvm-pass/MergeCRustFunc.cpp        /llvm-project/llvm/lib/Transforms/Utils/ \
+    && cp /quilt/merge_func/merge-rust-and-c/llvm-pass/MergeRustCFunc.cpp        /llvm-project/llvm/include/llvm/Transforms/Utils/ \
+    && cp /quilt/merge_func/merge-rust-and-c/llvm-pass/MergeRustCFunc.h          /llvm-project/llvm/lib/Transforms/Utils/ \
+    && cp /quilt/merge_func/merge-c-and-swift/llvm_pass/MergeCSwift.cpp          /llvm-project/llvm/include/llvm/Transforms/Utils/ \
+    && cp /quilt/merge_func/merge-c-and-swift/llvm_pass/MergeCSwift.h            /llvm-project/llvm/lib/Transforms/Utils/ \
+    && cp /quilt/merge_func/merge-swift-and-c/llvm_pass/MergeSwiftC.cpp          /llvm-project/llvm/include/llvm/Transforms/Utils/ \
+    && cp /quilt/merge_func/merge-swift-and-c/llvm_pass/MergeSwiftC.h            /llvm-project/llvm/lib/Transforms/Utils/ \
+    && cp /quilt/merge_func/merge-rust-and-swift/llvm_pass/MergeRustSwift.cpp    /llvm-project/llvm/include/llvm/Transforms/Utils/ \
+    && cp /quilt/merge_func/merge-rust-and-swift/llvm_pass/MergeRustSwift.h      /llvm-project/llvm/lib/Transforms/Utils/ \
+    && cp /quilt/merge_func/llvm-17/CMakeLists.txt                               /llvm-project/llvm/lib/Transforms/Utils/ \
+    && cp /quilt/merge_func/llvm-17/PassBuilder.cpp                              /llvm-project/llvm/lib/Passes/ \
+    && cp /quilt/merge_func/llvm-17/PassRegistry.def                             /llvm-project/llvm/lib/Passes/
 
 RUN cd /llvm-project \
     && mkdir build && cd build \
