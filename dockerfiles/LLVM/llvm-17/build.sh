@@ -7,12 +7,13 @@ echo $ROOT_DIR
 ARGS=("$@")
 
 CALLER=${ARGS[1]}
+USERNAME=$(echo $DOCKER_USER)
 
 function build_llvm {
-  sudo docker build --no-cache -t zyuxuan0115/llvm-17:latest \
+  sudo docker build --no-cache -t $USERNAME/llvm-17:latest \
        -f Dockerfile.llvm \
        .
-  sudo docker push zyuxuan0115/llvm-17:latest
+  sudo docker push $USERNAME/llvm-17:latest
 }
 
 case "$1" in
