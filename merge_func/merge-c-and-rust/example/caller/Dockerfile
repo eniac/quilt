@@ -1,6 +1,6 @@
 FROM zyuxuan0115/c-env as builder
 # Copy all the sources
-COPY function.c ./function.c
+COPY caller.c ./caller.c
 COPY Makefile ./Makefile
 
 WORKDIR /function

@@ -57,7 +57,7 @@ int make_rpc(char* func_name, char* input, char** output){
 
   if(curl) {
     // First set the URL that is about to receive our POST. This URL can
-    char* prefix = "http://gateway.openfaas.svc.cluster.local.:8080/function/";
+    char* prefix = "http://router.fission.svc.cluster.local:80/";
     //char* prefix = "http://localhost:8080/function/";
     char* url = (char*)malloc(sizeof(char)*(strlen(prefix)+strlen(func_name)));
     strcpy(url, prefix);
