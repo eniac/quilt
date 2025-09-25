@@ -1,26 +1,32 @@
 #!/bin/bash
-LLVM_DIR=/proj/zyuxuanssf-PG0/llvm-project-17/build/bin
-RUST_LIB=/users/zyuxuan/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib
-LINKER_FLAGS='-lstd-320ebc7037fb8f95 -lcurl -lcrypto -lm -lssl'
+LLVM_DIR=/proj/zyuxuanssf-PG0/zyuxuan/llvm-project-pthread/build/bin
+RUST_LIB=/users/zyuxuan/.rustup/toolchains/1.76-x86_64-unknown-linux-gnu/lib
+LIBSTD="$(printf '%s\n' "$RUST_LIB"/libstd*.so | head -n 1 || true)"
+
+base="${LIBSTD##*/}"     # e.g., libstd-66d8041607d2929b.so
+base="${base%.so}"     # e.g., libstd-66d8041607d2929b
+
+LIBSTD_BASENAME="${base:0:1}${base:3}"   # e.g., lstd-66d8041607d2929b
+LINKER_FLAGS="-$LIBSTD_BASENAME -lcurl -lcrypto -lm -lssl"
 
 function merge {
-  cd callee\
+  cd ../callee \
   && RUSTFLAGS="--emit=llvm-ir" cargo build \
   && cd ../caller \
   && $LLVM_DIR/clang -fPIC -emit-llvm -S caller.c -c -o caller.ll \
   && cd ../wrapper && RUSTFLAGS="--emit=llvm-ir" cargo build \
-  && cd ..
+  && cd ../merge_script
 
   echo "delete drop function in the wrapper"  
   rm -rf wrapper_ll && mkdir wrapper_ll
-  cp wrapper/target/debug/deps/*.ll wrapper_ll
+  cp ../wrapper/target/debug/deps/*.ll wrapper_ll
   WRAPPER_IR=$(ls wrapper_ll/wrapper-*.ll)
   $LLVM_DIR/opt -S $WRAPPER_IR -passes=merge-c-rust-func -drop-rust-drop -o wrapper_ll/wrapper.ll
   rm $WRAPPER_IR
 
   echo "rename callee function names"
   rm -rf callee_ll && mkdir callee_ll
-  cp callee/target/debug/deps/*.ll callee_ll
+  cp ../callee/target/debug/deps/*.ll callee_ll
   CALLEE_IR=$(ls callee_ll/function-*.ll)
   $LLVM_DIR/opt -S $CALLEE_IR -passes=merge-c-rust-func -rename-callee-cr -o callee_ll/callee_rename.ll
 
@@ -32,7 +38,7 @@ function merge {
 
   echo "merge caller and wrapper+callee function"
   rm -rf caller_ll && mkdir caller_ll
-  cp caller/caller.ll caller_ll
+  cp ../caller/caller.ll caller_ll
   $LLVM_DIR/opt -S wrapper_callee_new.ll -passes=merge-c-rust-func -rename-callee-cr -o caller_ll/wrapper_callee_rename.ll
   $LLVM_DIR/llvm-link caller_ll/*.ll -S -o caller_wrapper_callee.ll
   $LLVM_DIR/opt -S caller_wrapper_callee.ll -passes=merge-c-rust-func -merge-c-wrapper -o final.ll
@@ -41,7 +47,7 @@ function merge {
 }
 
 function clean {
-  cd callee && cargo clean \
+  cd ../callee && cargo clean \
   && cd ../caller && rm -rf *.ll \
   && cd ../wrapper && cargo clean \
   && cd .. \
