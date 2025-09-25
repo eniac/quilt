@@ -56,17 +56,18 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get update -y \
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y
 
+RUN apt-get update && apt-get install -y bash curl ca-certificates unzip gnupg2 libxml2-dev libz3-dev libpython3.8
+RUN curl -fsSLO https://download.swift.org/swiftly/linux/swiftly-$(uname -m).tar.gz && tar zxf swiftly-$(uname -m).tar.gz
+RUN ./swiftly init --quiet-shell-followup && \
+    bash -lc 'source "${SWIFTLY_HOME_DIR:-$HOME/.local/share/swiftly}/env.sh"; \
+              swiftly install 6.0.3; swiftly use 6.0.3; swift --version'
+
 COPY --from=builder /llvm-project/build /llvm
 COPY --from=builder /quilt/merge_func/merge-rust-async/demangle_rust_funcname/target/release/demangle_rust_funcname /llvm
 
 ENV CARGO_TARGET_DIR=/home/rust/target
 ENV PATH="/root/.cargo/bin:${PATH}"
-RUN rustup toolchain install nightly
-RUN rustup default 1.78
-RUN rustup default nightly
-RUN rustup install nightly-2024-12-19
-RUN rustup default nightly-2024-12-19
-RUN rustup component add rust-src --toolchain nightly-2024-12-19-x86_64-unknown-linux-gnu
+RUN rustup default 1.76
 ENV PATH="/llvm/bin:${PATH}"
 
 WORKDIR /llvm

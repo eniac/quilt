@@ -1,15 +1,15 @@
 #!/bin/bash
-LLVM_DIR=/proj/zyuxuanssf-PG0/llvm-project-17/build/bin
-RUST_LIB=/users/zyuxuan/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib
+LLVM_DIR=/llvm/bin
+RUST_LIB=/root/.rustup/toolchains/1.78-x86_64-unknown-linux-gnu/lib
 LINKER_FLAGS='-lstd-320ebc7037fb8f95 -lcurl -lcrypto -lm -lssl'
 
 function merge {
-  cd callee\
-  && RUSTFLAGS="--emit=llvm-ir" cargo build \
-  && cd ../caller \
-  && $LLVM_DIR/clang -fPIC -emit-llvm -S caller.c -c -o caller.ll \
-  && cd ../wrapper && RUSTFLAGS="--emit=llvm-ir" cargo build \
-  && cd ..
+  cd callee \
+  && CARGO_TARGET_DIR=./target CARGO_INCREMENTAL=0 cargo rustc --bin function -- --emit=llvm-ir
+  cd ../caller \
+  && $LLVM_DIR/clang -fPIC -emit-llvm -S caller.c -c -o caller.ll 
+  cd ../wrapper && CARGO_TARGET_DIR=./target CARGO_INCREMENTAL=0 cargo rustc --bin wrapper -- --emit=llvm-ir
+  cd ..
 
   echo "delete drop function in the wrapper"  
   rm -rf wrapper_ll && mkdir wrapper_ll
@@ -35,9 +35,9 @@ function merge {
   cp caller/caller.ll caller_ll
   $LLVM_DIR/opt -S wrapper_callee_new.ll -passes=merge-c-rust-func -rename-callee-cr -o caller_ll/wrapper_callee_rename.ll
   $LLVM_DIR/llvm-link caller_ll/*.ll -S -o caller_wrapper_callee.ll
-  $LLVM_DIR/opt -S caller_wrapper_callee.ll -passes=merge-c-rust-func -merge-c-wrapper -o final.ll
-  $LLVM_DIR/llc -filetype=obj final.ll -o function.o
-  $LLVM_DIR/clang -no-pie -L$RUST_LIB  function.o -o function $LINKER_FLAGS
+#  $LLVM_DIR/opt -S caller_wrapper_callee.ll -passes=merge-c-rust-func -merge-c-wrapper -o final.ll
+#  $LLVM_DIR/llc -filetype=obj final.ll -o function.o
+#  $LLVM_DIR/clang -no-pie -L$RUST_LIB  function.o -o function $LINKER_FLAGS
 }
 
 function clean {
