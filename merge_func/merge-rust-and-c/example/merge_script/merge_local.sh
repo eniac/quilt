@@ -1,15 +1,21 @@
 #!/bin/bash
-LLVM_DIR=/proj/zyuxuanssf-PG0/llvm-project-17/build/bin
-RUST_LIB=/users/zyuxuan/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib
-LINKER_FLAGS='-lstd-320ebc7037fb8f95 -lcurl -lcrypto -lm -lssl'
+LLVM_DIR=/proj/zyuxuanssf-PG0/zyuxuan/llvm-project-pthread/build/bin
+RUST_LIB=/users/zyuxuan/.rustup/toolchain/1.76-x86_64-unknown-linux-gnu/lib
+LIBSTD="$(printf '%s\n' "$RUST_LIB"/libstd*.so | head -n 1 || true)"
+
+base="${LIBSTD##*/}"     # e.g., libstd-66d8041607d2929b.so
+base="${base%.so}"     # e.g., libstd-66d8041607d2929b
+
+LIBSTD_BASENAME="${base:0:1}${base:3}"   # e.g., lstd-66d8041607d2929b
+LINKER_FLAGS="-$LIBSTD_BASENAME -lcurl -lcrypto -lm -lssl"
 
 function merge {
-  cd caller\
-  && RUSTFLAGS="--emit=llvm-ir" cargo build \
-  && cd ../callee \
+  cd ../caller \
+  && RUSTFLAGS="--emit=llvm-ir" cargo build
+  cd ../callee \
   && $LLVM_DIR/clang -fPIC -emit-llvm -S callee.c -c -o callee.ll \
   && cd ../wrapper && RUSTFLAGS="--emit=llvm-ir" cargo build \
-  && cd ..
+  && cd ../merge_script
 
   $LLVM_DIR/opt -S callee/callee.ll -passes=rename-func --callee-lang=c -o callee_rename.ll
   cp callee_rename.ll caller/target/debug/deps/
