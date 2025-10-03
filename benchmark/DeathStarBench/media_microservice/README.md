@@ -89,11 +89,11 @@ curl localhost:8081/function/register-user -d '{"first_name":"Yuxuan","last_name
 ### register-user-with-id
 
 ```bash
-curl localhost:8081/function/register-user-with-id -d '{"user_id":11078,"first_name":"Tom","last_name":"Wenisch","username":"twenisch","password":"12345"}'
+curl localhost:8081/function/register-user-with-id -d '{"user_id":11078,"first_name":"Tom","last_name":"W","username":"tomw","password":"12345"}'
 ```
 
 ```bash
-curl localhost:8081/function/register-user-with-id -d '{"user_id":11079,"first_name":"Todd","last_name":"Austin","username":"taustin","password":"12345"}'
+curl localhost:8081/function/register-user-with-id -d '{"user_id":11079,"first_name":"Todd","last_name":"A","username":"taus","password":"12345"}'
 ```
 
 ### login
