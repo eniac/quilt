@@ -293,7 +293,7 @@ curl localhost:8888/function/register-user -d '{"username":"zyuxuan","password":
 ```
 
 ```bash
-curl localhost:8888/function/register-user -d '{"username":"twenisch","password":"456789"}'
+curl localhost:8888/function/register-user -d '{"username":"tomw","password":"456789"}'
 ```
 
 ```bash
