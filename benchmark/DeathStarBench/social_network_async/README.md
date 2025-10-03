@@ -25,7 +25,7 @@ curl 127.0.0.1:8081/function/user-mention-service -d '{"usernames":["Alice","Bob
 ### TextService
 
 ```bash
-curl 127.0.0.1:8081/function/text-service -d '{"text":"Hey, this is @Yuxuan! Nice to meet you and welcome to my personal web: https://kate0115.net @twenisch"}'
+curl 127.0.0.1:8081/function/text-service -d '{"text":"Hey, this is @Yuxuan! Nice to meet you and welcome to my personal web: https://kate0115.net @tomw"}'
 ```
 
 ### MediaService
@@ -37,17 +37,17 @@ curl 127.0.0.1:8081/function/media-service -d '{"media_id":[111,222],"media_type
 ### RegisterUserWithId
 
 ```bash
-curl 127.0.0.1:8081/function/register-user-with-id -d '{"first_name":"Tom","last_name":"Wenisch","username":"twenisch","password":"umichandgoogle","user_id":11028}'
+curl 127.0.0.1:8081/function/register-user-with-id -d '{"first_name":"Tom","last_name":"W","username":"tomw","password":"123456","user_id":11028}'
 ```
 
 ```bash
-curl 127.0.0.1:8080/function/register-user-with-id -d '{"first_name":"Todd","last_name":"Austin","username":"todda","password":"uwandupenn","user_id":11029}'
+curl 127.0.0.1:8080/function/register-user-with-id -d '{"first_name":"Todd","last_name":"A","username":"todda","password":"123456","user_id":11029}'
 ```
 
 ### RegisterUser
 
 ```bash
-curl 127.0.0.1:8081/function/register-user -d '{"first_name":"Yuxuan","last_name":"Zhang","username":"zyuxuan","password":"umichandupenn"}'
+curl 127.0.0.1:8081/function/register-user -d '{"first_name":"Yuxuan","last_name":"Zhang","username":"zyuxuan","password":"234567"}'
 ```
 
 ### ComposeCreatorWithUsername
@@ -59,7 +59,7 @@ curl 127.0.0.1:8081/function/compose-creator-with-username -d '{"username":"zyux
 ### ComposeCreatorWithUserId
 
 ```bash
-curl 127.0.0.1:8081/function/compose-creator-with-userid -d '{"user_id":11028,"username":"twenisch"}'
+curl 127.0.0.1:8081/function/compose-creator-with-userid -d '{"user_id":11028,"username":"tomw"}'
 ```
 
 ### GetUserId
@@ -71,7 +71,7 @@ curl 127.0.0.1:8081/function/get-user-id -d '{"username":"zyuxuan"}'
 ### UserLogin
 
 ```bash
-curl 127.0.0.1:8081/function/user-login -d '{"username":"zyuxuan","password":"umichandupenn","secret":"idon'tknowwhatshouldbesecret"}'
+curl 127.0.0.1:8081/function/user-login -d '{"username":"zyuxuan","password":"234567","secret":"idon'tknowwhatshouldbesecret"}'
 ```
 
 ### SocialGraphInsertUser
@@ -101,13 +101,13 @@ curl 127.0.0.1:8080/function/social-graph-unfollow -d '{"user_id":11028,"followe
 ### SocialGraphFollowWithUsername
 
 ```bash
-curl 127.0.0.1:8080/function/social-graph-follow-with-username -d '{"user_name":"twenisch","followee_name":"todda"}'
+curl 127.0.0.1:8080/function/social-graph-follow-with-username -d '{"user_name":"tomw","followee_name":"todda"}'
 ```
 
 ### SocialGraphUnfollowWithUsername
 
 ```bash
-curl 127.0.0.1:8080/function/social-graph-unfollow-with-username -d '{"user_name":"twenisch","followee_name":"todda"}'
+curl 127.0.0.1:8080/function/social-graph-unfollow-with-username -d '{"user_name":"tomw","followee_name":"todda"}'
 ```
 
 ### SocialGraphGetFollowers
@@ -127,11 +127,11 @@ curl 127.0.0.1:8080/function/social-graph-get-followees -d '{"user_id":11028}'
 ### StorePost
 
 ```bash
-curl 127.0.0.1:8080/function/store-post -d '{"post_id":1723,"creator": {"user_id":11028,"username":"twenisch"},"req_id":7795,"text":"yesterday once more ","user_mentions": [],"media":[],"urls":[],"timestamp":12343249,"post_type":"POST"}'
+curl 127.0.0.1:8080/function/store-post -d '{"post_id":1723,"creator": {"user_id":11028,"username":"tomw"},"req_id":7795,"text":"yesterday once more ","user_mentions": [],"media":[],"urls":[],"timestamp":12343249,"post_type":"POST"}'
 ```
 
 ```bash
-curl 127.0.0.1:8080/function/store-post -d '{"post_id":1722,"creator": {"user_id":11029,"username":"todda"},"req_id":7798,"text":"Hey, this is @todda! Nice to meet you and welcome to my personal web: https://kate0115.net @tomwenisch ","user_mentions": [{"user_id":11029,"username":"todda"},{"user_id":11028,"username":"twenisch"}],"media":[],"urls":[],"timestamp":12343242,"post_type":"POST"}'
+curl 127.0.0.1:8080/function/store-post -d '{"post_id":1722,"creator": {"user_id":11029,"username":"todda"},"req_id":7798,"text":"Hey, this is @todda! Nice to meet you and welcome to my personal web: https://kate0115.net @tomwenisch ","user_mentions": [{"user_id":11029,"username":"todda"},{"user_id":11028,"username":"tomw"}],"media":[],"urls":[],"timestamp":12343242,"post_type":"POST"}'
 ```
 
 ### ReadPost
@@ -178,5 +178,5 @@ curl 127.0.0.1:8080/function/read-user-timeline -d '{"user_id":11029,"start":0,"
 ### ComposePost
 
 ```bash
-curl 127.0.0.1:8081/function/compose-post -d '{"username":"twenisch","user_id":11028,"text":"Hey, this is @twenisch! Nice to meet you and welcome to my personal web: https://eecs.umich.edu/~twenisch @bobk ","media_ids":[],"media_types":[],"post_type":"POST"}"
+curl 127.0.0.1:8081/function/compose-post -d '{"username":"tomw","user_id":11028,"text":"Hey, this is @tomw! Nice to meet you and welcome to my personal web: https://eecs.umich.edu/~tomw @bobk ","media_ids":[],"media_types":[],"post_type":"POST"}"
 ```
