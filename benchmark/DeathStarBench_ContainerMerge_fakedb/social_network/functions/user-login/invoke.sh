@@ -4,7 +4,7 @@ FUNC=user-login
 
 function invoke_fission {
   curl -XPOST http://localhost:8888/$FUNC \
-  -d '{"username":"twenisch","password":"umichandgoogle","secret":"idontknowwhatshouldbesecret"}'
+  -d '{"username":"tomw","password":"123456","secret":"idontknowwhatshouldbesecret"}'
 }
 
 case "$1" in

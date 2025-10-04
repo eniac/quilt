@@ -4,7 +4,7 @@ FUNC=compose-creator-with-userid
 
 function invoke_fission {
   curl -XPOST http://localhost:8888/$FUNC \
-  -d '{"user_id":11028,"username":"twenisch"}'
+  -d '{"user_id":11028,"username":"tomw"}'
 }
 
 case "$1" in
