@@ -25,7 +25,7 @@ curl 127.0.0.1:8888/function/user-mention-service -d '{"usernames":["Alice","Bob
 ### TextService
 
 ```bash
-curl 127.0.0.1:8888/function/text-service -d '{"text":"Hey, this is @Yuxuan! Nice to meet you and welcome to my personal web: https://kate0115.net @twenisch"}'
+curl 127.0.0.1:8888/function/text-service -d '{"text":"Hey, this is @Yuxuan! Nice to meet you and welcome to my personal web: https://kate0115.net @tomw "}'
 ```
 
 ### MediaService
@@ -127,7 +127,7 @@ curl 127.0.0.1:8888/function/social-graph-get-followees -d '{"user_id":11028}'
 ### StorePost
 
 ```bash
-curl 127.0.0.1:8888/function/store-post -d '{"post_id":1723,"creator": {"user_id":11028,"username":"twenisch"},"req_id":7795,"text":"yesterday once more ","user_mentions": [],"media":[],"urls":[],"timestamp":12343249,"post_type":"POST"}'
+curl 127.0.0.1:8888/function/store-post -d '{"post_id":1723,"creator": {"user_id":11028,"username":"tomw"},"req_id":7795,"text":"yesterday once more ","user_mentions": [],"media":[],"urls":[],"timestamp":12343249,"post_type":"POST"}'
 ```
 
 ```bash
