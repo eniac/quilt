@@ -4,7 +4,7 @@ FUNC=register-user
 
 function invoke_fission {
   curl -XPOST http://localhost:8888/$FUNC \
-  -d '{"first_name":"Yuxuan","last_name":"Zhang","username":"zyuxuan","password":"umichandupenn"}'
+  -d '{"first_name":"Yuxuan","last_name":"Zhang","username":"zyuxuan","password":"123456"}'
 }
 
 case "$1" in
