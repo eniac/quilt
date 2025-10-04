@@ -4,7 +4,7 @@ FUNC=social-graph-unfollow-with-username
 
 function invoke_fission {
   url -XPOST http://localhost:8888/$FUNC \
-  -d '{"user_name":"twenisch","followee_name":"todda"}'
+  -d '{"user_name":"tomw","followee_name":"todda"}'
 }
 
 case "$1" in
