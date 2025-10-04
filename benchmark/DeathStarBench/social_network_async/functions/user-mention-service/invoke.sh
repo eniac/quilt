@@ -4,7 +4,7 @@ FUNC=user-mention-service
 
 function invoke_fission {
   curl -XPOST http://localhost:8888/$FUNC \
-  -d '{"usernames":["zyuxuan","twenisch"]}'
+  -d '{"usernames":["zyuxuan","tomw"]}'
 }
 
 case "$1" in

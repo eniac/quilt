@@ -4,7 +4,7 @@ FUNC=text-service
 
 function invoke_fission {
   curl -XPOST http://localhost:8888/$FUNC \
-  -d '{"text":"Hey, this is @Yuxuan! Nice to meet you and welcome to my personal web: https://kate0115.net @twenisch"}'
+  -d '{"text":"Hey, this is @Yuxuan! Nice to meet you and welcome to my personal web: https://kate0115.net @tomw "}'
 }
 
 case "$1" in
