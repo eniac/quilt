@@ -7,13 +7,10 @@ function invoke_fission {
   -d '{"username":"zyuxuan","password":"123456","secret":"idontknowwhatasecretis"}'
 
   curl -XPOST http://localhost:8888/$FUNC \
-  -d '{"username":"twenisch","password":"12345","secret":"idontknowwhatasecretis"}'
+  -d '{"username":"tomw","password":"12345","secret":"idontknowwhatasecretis"}'
 }
 
 case "$1" in
-wsk)
-    invoke_wsk
-    ;;
 fission)
     invoke_fission
     ;;
