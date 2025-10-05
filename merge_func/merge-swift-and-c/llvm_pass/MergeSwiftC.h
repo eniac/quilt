@@ -51,7 +51,7 @@ public:
   void createCall2NewCallee(CallInst*, Function*);
 
 private:
-  std::string demangle_bin = "/proj/zyuxuanssf-PG0/zyuxuan/swift-6.0.3/usr/bin/swift-demangle";
+  std::string demangle_bin = "/root/.local/share/swiftly/toolchains/6.0.3/usr/bin/swift-demangle";
 };
 
 } // namespace llvm
