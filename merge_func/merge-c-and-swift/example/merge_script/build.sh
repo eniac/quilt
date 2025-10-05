@@ -7,7 +7,7 @@ DOCKERFILE_DIR=$ROOT_DIR/../../../dockerfiles/LLVM
 ARGS=("$@")
 USERNAME=$(echo $DOCKER_USER)
 
-FUNC=c-rust-merged
+FUNC=c-swift-merged
 
 function merge {
   rm -rf temp && mkdir temp

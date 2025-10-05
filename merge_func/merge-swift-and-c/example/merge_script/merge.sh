@@ -1,11 +1,13 @@
 #!/usr/bin/bash
 
-LLVM_DIR=/proj/zyuxuanssf-PG0/zyuxuan/llvm-project-17/build/bin
+LLVM_DIR=/llvm/bin
+SWIFT_DIR=/root/.local/share/swiftly/toolchains/6.0.3/usr/bin
+SWIFT_LIB_DIR=/root/.local/share/swiftly/toolchains/6.0.3/usr/lib/swift/linux
 
 function compile {
-  swiftc -emit-ir -o caller.ll ../caller/function.swift
-  $LLVM_DIR/clang -emit-llvm -S -o callee.ll ../callee/function.cpp -std=c++17
-  swiftc -emit-ir -o wrapper.ll ../wrapper/wrapper.swift
+  $SWIFT_DIR/swiftc -emit-ir -o caller.ll caller/function.swift
+  $LLVM_DIR/clang -emit-llvm -S -o callee.ll callee/function.cpp -std=c++17
+  $SWIFT_DIR/swiftc -emit-ir -o wrapper.ll wrapper/wrapper.swift
 }
 
 function merge {
@@ -17,7 +19,7 @@ function merge {
 
 function link {
   $LLVM_DIR/llc -filetype=obj -relocation-model=pic -o merged.o merged.ll
-  $LLVM_DIR/clang -fPIC -L/proj/zyuxuanssf-PG0/zyuxuan/swift-6.0.3/usr/lib/swift/linux merged.o -o function -lswiftCore -lswiftSwiftOnoneSupport -lswift_Concurrency -lswift_StringProcessing -lswift_RegexParser -lswiftGlibc -lBlocksRuntime -ldispatch -lswiftDispatch -lFoundation -lFoundationEssentials -lFoundationInternationalization -lFoundationNetworking -lstdc++ -lcrypto 
+  $LLVM_DIR/clang -fPIC -L$SWIFT_LIB_DIR merged.o -o function -lswiftCore -lswiftSwiftOnoneSupport -lswift_Concurrency -lswift_StringProcessing -lswift_RegexParser -lswiftGlibc -lBlocksRuntime -ldispatch -lswiftDispatch -lFoundation -lFoundationEssentials -lFoundationInternationalization -lFoundationNetworking -lstdc++ -lcrypto 
 }
 
 function build {
