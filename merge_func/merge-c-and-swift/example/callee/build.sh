@@ -1,24 +1,29 @@
 #!/bin/bash
+
+USERNAME=$(echo $DOCKER_USER)
+FUNC=swift-callee
+
 function build_swift {
-  sudo docker build --no-cache -t zyuxuan0115/swift-callee:latest \
+  sudo docker build --no-cache -t $USERNAME/$FUNC:latest \
+       --build-arg USERNAME=$USERNAME \
        -f Dockerfile \
        .
-  sudo docker push zyuxuan0115/swift-callee:latest
-#  sudo docker system prune -f
+  sudo docker push $USERNAME/$FUNC:latest
+  sudo docker system prune -f
 }
 
 function deploy_swift {
-  fission function run-container --name swift-callee \
-    --image docker.io/zyuxuan0115/swift-callee:latest \
+  fission function run-container --name $FUNC \
+    --image docker.io/$USERNAME/$FUNC:latest \
     --port 8888 \
     --namespace fission-function
   fission httptrigger create --method POST \
-    --url /swift-callee --function swift-callee \
+    --url /$FUNC --function $FUNC \
     --namespace fission-function
 }
 
 function invoke_swift {
-  curl -XPOST http://localhost:8888/swift-callee \
+  curl -XPOST http://localhost:8888/$FUNC \
   -d ''
 }
 
