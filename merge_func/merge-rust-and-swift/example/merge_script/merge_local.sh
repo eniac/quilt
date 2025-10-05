@@ -1,19 +1,18 @@
 #!/usr/bin/bash
 
-LLVM_DIR=/llvm/bin
-RUST_LIB=/root/.rustup/toolchains/1.76-x86_64-unknown-linux-gnu/lib
-SWIFT_DIR=/root/.local/share/swiftly/toolchains/6.0.3/usr/bin
-SWIFT_LIB=/root/.local/share/swiftly/toolchains/6.0.3/usr/lib/swift/linux
+LLVM_DIR=/proj/zyuxuanssf-PG0/zyuxuan/llvm-project-17/build/bin
+RUST_LIB=/users/zyuxuan/.rustup/toolchains/1.76-x86_64-unknown-linux-gnu/lib
+SWIFT_LIB=/proj/zyuxuanssf-PG0/zyuxuan/swift-6.0.3/usr/lib/swift/linux
 
 function compile {
-  cd caller \
+  cd ../caller \
     && RUSTFLAGS="--emit=llvm-ir" cargo build \
-    && cd ..
-  $SWIFT_LIB/swiftc -emit-ir -o callee.ll callee/function.swift
-  $SWIFT_LIB/swiftc -emit-ir -o wrapper_c2s.ll wrapper_c2swift/wrapper.swift
+    && cd ../merge_script
+  swiftc -emit-ir -o callee.ll ../callee/function.swift
+  swiftc -emit-ir -o wrapper_c2s.ll ../wrapper_c2swift/wrapper.swift
   cd ../wrapper_rust2c \
     && RUSTFLAGS="--emit=llvm-ir" cargo build \
-    && cd ..
+    && cd ../merge_script
 }
 
 function merge {
