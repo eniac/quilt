@@ -4,7 +4,9 @@ USERNAME=$(echo $DOCKER_USER)
 FUNC=c-caller
 
 function build {
-  sudo docker build --no-cache -t $USERNAME/$FUNC:latest -f Dockerfile . 
+  sudo docker build --no-cache -t $USERNAME/$FUNC:latest \
+  --build-arg USERNAME=$USERNAME \
+  -f Dockerfile . 
   sudo docker push $USERNAME/$FUNC:latest
 }
 
