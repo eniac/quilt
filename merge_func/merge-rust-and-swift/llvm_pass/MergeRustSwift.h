@@ -59,7 +59,8 @@ public:
   void createCall2NewCallee(CallInst*, Function*);
 
 private:
-  std::string demangle_bin = "/proj/zyuxuanssf-PG0/zyuxuan/faas-test/merge_func/merge-rust-async/demangle_rust_funcname/target/debug/demangle_rust_funcname";
+  std::string demangle_bin = "/llvm/demangle_rust_funcname";
+  std::string swift_demangle_bin = "/root/.local/share/swiftly/toolchains/6.0.3/usr/bin/swift-demangle";
 };
 
 } // namespace llvm
