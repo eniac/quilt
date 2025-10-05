@@ -50,8 +50,8 @@ function clean {
   cd ../callee && cargo clean \
   && cd ../caller && rm -rf *.ll \
   && cd ../wrapper && cargo clean \
-  && cd .. \
-  && rm -rf *.ll *.o function callee_ll wrapper_ll
+  && cd ../merge_script \
+  && rm -rf *.ll *.o function callee_ll wrapper_ll caller_ll
 }
 
 case "$1" in
