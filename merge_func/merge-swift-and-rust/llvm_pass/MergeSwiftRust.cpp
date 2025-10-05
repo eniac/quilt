@@ -149,8 +149,8 @@ std::string MergeSwiftRustPass::getDemangledSwiftFunctionName(std::string mangle
     dup2(pipe_from_child[1], STDOUT_FILENO);
     close(pipe_from_child[1]); 
 
-    execlp("swift-demangle", "swift-demangle", nullptr);
-    perror("execlp"); 
+    execl(swift_demangle_bin.c_str(), swift_demangle_bin.c_str(), nullptr);
+    perror("execl"); 
   } 
   else {
     // Parent process
