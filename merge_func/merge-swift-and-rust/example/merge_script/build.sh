@@ -7,14 +7,14 @@ DOCKERFILE_DIR=$ROOT_DIR/../../../dockerfiles/LLVM
 ARGS=("$@")
 USERNAME=$(echo $DOCKER_USER)
 
-FUNC=rust-swift-merged
+FUNC=swift-rust-merged
 
 function merge {
   rm -rf temp && mkdir temp
   cp -r ../caller temp
   cp -r ../callee temp
-  cp -r ../wrapper_rust2c temp
-  cp -r ../wrapper_c2swift temp
+  cp -r ../wrapper_swift2c temp
+  cp -r ../wrapper_c2rust temp
   cp -r merge.sh temp
   sudo docker build --no-cache -t $USERNAME/$FUNC:latest \
     --build-arg USERNAME=$USERNAME \
