@@ -1,21 +1,27 @@
 #!/bin/bash
+USERNAME=$(echo $DOCKER_USER)
+FUNC=c-callee
+
 function build {
-  sudo docker build --no-cache  -t zyuxuan0115/c-callee:latest -f Dockerfile . 
-  sudo docker push zyuxuan0115/c-callee:latest
+  sudo docker build --no-cache  \
+    -t $USERNAME/$FUNC:latest \
+    --build-arg USERNAME=$USERNAME \
+    -f Dockerfile . 
+  sudo docker push $USERNAME/$FUNC:latest
 }
 
 function deploy {
-  fission function run-container --name c-callee \
-    --image docker.io/zyuxuan0115/c-callee:latest \
+  fission function run-container --name $FUNC \
+    --image docker.io/$USERNAME/$FUNC:latest \
     --port 8888 \
     --namespace fission-function
   fission httptrigger create --method POST \
-    --url /c-callee --function c-callee \
+    --url /$FUNC --function $FUNC \
     --namespace fission-function
 }
 
 function invoke {
-  curl -XPOST http://localhost:8888/c-callee \
+  curl -XPOST http://localhost:8888/$FUNC \
   -d '{"msg":""}'
 }
 
