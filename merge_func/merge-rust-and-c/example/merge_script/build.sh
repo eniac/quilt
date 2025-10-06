@@ -15,19 +15,19 @@ function merge {
   cp -r ../callee temp
   cp -r ../wrapper temp
   cp -r merge.sh temp
-  sudo docker build --no-cache -t zyuxuan0115/$FUNC:latest \
+  sudo docker build --no-cache -t $USERNAME/$FUNC:latest \
     --build-arg USERNAME=$USERNAME \
     -f Dockerfile \
     temp
   rm -rf temp
 #  sudo docker system prune -f
-#  sudo docker push zyuxuan0115/$FUNC:latest
+#  sudo docker push $USERNAME/$FUNC:latest
 }
 
 
 function deploy {
   fission function run-container --name $FUNC \
-      --image docker.io/zyuxuan0115/$FUNC \
+      --image docker.io/$USERNAME/$FUNC \
       --minscale=1 --maxscale=5 \
       --minmemory=1 --maxmemory=80 \
       --mincpu=1  --maxcpu=8000 \
@@ -38,7 +38,7 @@ function deploy {
       --namespace fission-function
 
   fission function run-container --name $FUNC-9999 \
-      --image docker.io/zyuxuan0115/$FUNC-9999 \
+      --image docker.io/$USERNAME/$FUNC-9999 \
       --minscale=1 --maxscale=5 \
       --minmemory=1 --maxmemory=80 \
       --mincpu=1  --maxcpu=8000 \

@@ -14,33 +14,31 @@ function merge {
   cp -r ../caller temp
   cp -r ../callee temp
   cp -r merge.sh temp
-  sudo docker build --no-cache -t zyuxuan0115/$FUNC:latest \
+  sudo docker build --no-cache -t $USERNAME/$FUNC:latest \
     --build-arg FANOUT=$FANOUT \
     -f Dockerfile \
     temp
   rm -rf temp
   sudo docker system prune -f
-  sudo docker push zyuxuan0115/$FUNC:latest
-}
+  sudo docker push $USERNAME/$FUNC:latest
 
-function merge_no_cond {
   rm -rf temp && mkdir temp
   cp -r ../caller temp
   cp -r ../callee temp
   cp -r merge.sh temp
-  sudo docker build --no-cache -t zyuxuan0115/$FUNC-9999:latest \
+  sudo docker build --no-cache -t $USERNAME/$FUNC-9999:latest \
     --build-arg FANOUT=9999 \
     -f Dockerfile \
     temp
   rm -rf temp
   sudo docker system prune -f
-  sudo docker push zyuxuan0115/$FUNC-9999:latest
+  sudo docker push $USERNAME/$FUNC-9999:latest
 }
 
 
 function deploy {
   fission function run-container --name $FUNC \
-      --image docker.io/zyuxuan0115/$FUNC \
+      --image docker.io/$USERNAME/$FUNC \
       --minscale=1 --maxscale=5 \
       --minmemory=1 --maxmemory=80 \
       --mincpu=1  --maxcpu=8000 \
@@ -49,6 +47,18 @@ function deploy {
   fission httptrigger create --method POST \
       --url /$FUNC --function $FUNC \
       --namespace fission-function
+
+  fission function run-container --name $FUNC-9999 \
+      --image docker.io/$USERNAME/$FUNC-9999 \
+      --minscale=1 --maxscale=5 \
+      --minmemory=1 --maxmemory=80 \
+      --mincpu=1  --maxcpu=8000 \
+      --port 8888 \
+      --namespace fission-function
+  fission httptrigger create --method POST \
+      --url /$FUNC-9999 --function $FUNC-9999 \
+      --namespace fission-function
+
 }
 
 function invoke {
@@ -59,9 +69,6 @@ function invoke {
 case "$1" in
 merge)
     merge
-    ;;
-merge_no_cond)
-    merge_no_cond
     ;;
 deploy)
     deploy

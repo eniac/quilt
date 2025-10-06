@@ -38,7 +38,7 @@ function deploy {
       --namespace fission-function
 
   fission function run-container --name $FUNC-9999 \
-      --image docker.io/zyuxuan0115/$FUNC-9999 \
+      --image docker.io/$USERNAME/$FUNC-9999 \
       --minscale=1 --maxscale=5 \
       --minmemory=1 --maxmemory=80 \
       --mincpu=1  --maxcpu=8000 \
