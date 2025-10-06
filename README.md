@@ -364,6 +364,52 @@ cd quilt/benchmark/DeathStarBench_fakedb/social_network/merge
 
 - See the [merge_solver](https://github.com/eniac/quilt/tree/main/merge_solver) subdirectory for instructions on how to reproduce the merge solver's results.
 
+
+
+### Figure 10 experiment
+
+- Build LLVM-17 compiler image and fission-env for C/C++
+
+```bash
+cd quilt/dockerfiles/LLVM/llvm-17
+./build.sh llvm
+cd quilt/dockerfiles/Env/c-env
+./build.sh
+```
+
+- Generate Function Images and Deploy Functions
+  + make sure you have Fission successfully setup
+  + the number 6 after `./build.sh merge` is the threshold, you can set it to other numbers.
+
+```bash
+# build the caller image and deploythe the function
+cd quilt/merge_func/merge-c-fanout/example/caller \
+  && ./build.sh build && ./build.sh deploy
+# build the callee image and deploy the function
+cd quilt/merge_func/merge-c-fanout/example/callee \
+  && ./build.sh build && ./build.sh deploy
+# build the merged images (both conditional and no-conditional versions are built)
+# and deploy the functions
+cd quilt/merge_func/merge-c-fanout/example/merge_script \
+  && ./build.sh merge 6 && ./build.sh deploy
+```
+
+- Run wrk2 tests
+  + the 5 at the end of each command means client wants the fanout from the caller to be 5
+
+```bash
+cd quilt/test/wrk2_fission/c_fanout
+# measure baseline performance
+./test_fanout.sh baseline 5
+./test_fanout.sh baseline 13
+# measure Quilt performance
+./test_fanout.sh fanout 5
+./test_fanout.sh fanout 13
+# measure Quilt (no conditional) performance - we set the threshold to 9999
+./test_fanout.sh fanout-no-cond 5
+./test_fanout.sh fanout-no-cond 13
+```
+
 ### Example of merging functions in different languages
 Quilt is able to merge functions across various languages. We give 6 examples here if you are interested. We will be cleaning up the code for the many other examples in the coming days. We did not report any cross-language experiments in our evaluation, so there is nothing to reproduce.
 
@@ -467,48 +513,4 @@ Quilt is able to merge functions across various languages. We give 6 examples he
 > cd quilt/merge_func/merge-c-and-swift/example/merge_script
 > ./build.sh merge
 > ./build.sh deploy
-```
-
-### Figure 10 experiment
-
-- Build LLVM-17 compiler image and fission-env for C/C++
-
-```bash
-cd quilt/dockerfiles/LLVM/llvm-17
-./build.sh llvm
-cd quilt/dockerfiles/Env/c-env
-./build.sh
-```
-
-- Generate Function Images and Deploy Functions
-  + make sure you have Fission successfully setup
-  + the number 6 after `./build.sh merge` is the threshold, you can set it to other numbers.
-
-```bash
-# build the caller image and deploythe the function
-cd quilt/merge_func/merge-c-fanout/example/caller \
-  && ./build.sh build && ./build.sh deploy
-# build the callee image and deploy the function
-cd quilt/merge_func/merge-c-fanout/example/callee \
-  && ./build.sh build && ./build.sh deploy
-# build the merged images (both conditional and no-conditional versions are built)
-# and deploy the functions
-cd quilt/merge_func/merge-c-fanout/example/merge_script \
-  && ./build.sh merge 6 && ./build.sh deploy
-```
-
-- Run wrk2 tests
-  + the 5 at the end of each command means client wants the fanout from the caller to be 5
-
-```bash
-cd quilt/test/wrk2_fission/c_fanout
-# measure baseline performance
-./test_fanout.sh baseline 5
-./test_fanout.sh baseline 13
-# measure Quilt performance
-./test_fanout.sh fanout 5
-./test_fanout.sh fanout 13
-# measure Quilt (no conditional) performance - we set the threshold to 9999
-./test_fanout.sh fanout-no-cond 5
-./test_fanout.sh fanout-no-cond 13
 ```
