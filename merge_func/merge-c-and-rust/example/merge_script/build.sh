@@ -20,8 +20,8 @@ function merge {
     -f Dockerfile \
     temp
   rm -rf temp
-#  sudo docker system prune -f
-#  sudo docker push $USERNAME/$FUNC:latest
+  sudo docker system prune -f
+  sudo docker push $USERNAME/$FUNC:latest
 }
 
 
