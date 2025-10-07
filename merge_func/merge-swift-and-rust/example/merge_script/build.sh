@@ -37,18 +37,6 @@ function deploy {
   fission httptrigger create --method POST \
       --url /$FUNC --function $FUNC \
       --namespace fission-function
-
-  fission function run-container --name $FUNC-9999 \
-      --image docker.io/$USERNAME/$FUNC-9999 \
-      --minscale=1 --maxscale=5 \
-      --minmemory=1 --maxmemory=80 \
-      --mincpu=1  --maxcpu=8000 \
-      --port 8888 \
-      --namespace fission-function
-  fission httptrigger create --method POST \
-      --url /$FUNC-9999 --function $FUNC-9999 \
-      --namespace fission-function
-
 }
 
 function invoke {
