@@ -1,0 +1,35 @@
+FROM ubuntu:focal as builder
+
+RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get update \
+    && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y build-essential perl zip git curl wget \
+    && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y ca-certificates pkg-config libssl-dev openssh-client openssl 
+
+WORKDIR /
+RUN wget https://go.dev/dl/go1.23.4.linux-amd64.tar.gz
+RUN tar -vxf go1.23.4.linux-amd64.tar.gz
+ENV PATH="/go/bin:$PATH"
+
+WORKDIR /binary
+COPY *.go /binary/
+
+RUN go mod init github.com/fission/environments/binary
+RUN go mod tidy
+
+RUN go build -o server .
+
+FROM ubuntu:focal as final
+
+WORKDIR /app
+
+RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get update \
+  && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y ca-certificates libssl-dev libcurl4-openssl-dev \
+  && rm -rf /var/lib/apt/lists/*
+  
+COPY --from=builder /binary/server /app/server
+
+ENV SWIFT_LIB=/root/.local/share/swiftly/toolchains/6.0.3/usr/lib/swift/linux
+ENV RUST_LIB=/root/.rustup/toolchains/1.76-x86_64-unknown-linux-gnu/lib
+ENV LD_LIBRARY_PATH=$SWIFT_LIB:$LD_LIBRARY_PATH:$RUST_LIB
+
+EXPOSE 8888
+ENTRYPOINT ["./server"]

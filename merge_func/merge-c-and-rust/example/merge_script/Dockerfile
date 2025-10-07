@@ -7,7 +7,7 @@ COPY . .
 
 RUN ./merge.sh merge
 
-FROM ${USERNAME}/fission-env:latest as final
+FROM ${USERNAME}/fission-multi-lang-env:latest as final
 
 COPY --from=builder /home/merge/function /bin/userfunc
 COPY --from=builder /root/.rustup/toolchains/1.76-x86_64-unknown-linux-gnu/lib /root/.rustup/toolchains/1.76-x86_64-unknown-linux-gnu/lib
