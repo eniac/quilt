@@ -411,7 +411,7 @@ cd quilt/test/wrk2_fission/c_fanout
 ```
 
 ### Example of merging functions in different languages
-Quilt is able to merge functions across various languages. We give 6 examples here if you are interested. We will be cleaning up the code for the many other examples in the coming days. We did not report any cross-language experiments in our evaluation, so there is nothing to reproduce.
+Quilt is able to merge functions across various languages. We give examples here if you are interested. We did not report any cross-language experiments in our evaluation, so there is nothing to reproduce.
 
 #### Build llvm-17 docker image and Fission multi-language environment
 
