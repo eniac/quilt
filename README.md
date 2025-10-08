@@ -414,6 +414,7 @@ cd quilt/test/wrk2_fission/c_fanout
 Quilt is able to merge functions across various languages. We give 6 examples here if you are interested. We will be cleaning up the code for the many other examples in the coming days. We did not report any cross-language experiments in our evaluation, so there is nothing to reproduce.
 
 #### Build llvm-17 docker image and Fission multi-language environment
+
 ```bash
 > cd quilt/dockerfiles/LLVM/llvm-17
 > ./build.sh llvm
@@ -422,23 +423,21 @@ Quilt is able to merge functions across various languages. We give 6 examples he
 ```
 
 #### Build caller, callee and merged function image
-- `caller_language` can be one from `c`, `rust` and `swift`
-- `caller_language` can be one from `c`, `rust` and `swift`
+
+- replace `caller_language` in the following script to be one from `c`, `rust` and `swift`
+- replace `caller_language` in the following script to be one from `c`, `rust` and `swift`
 - caller and callee should be in different languages.
 
 ```bash
 # build and deploy caller
 > cd quilt/merge_func/merge-{caller_language}-and-{callee_language}/example/caller
-> ./build.sh build
-> ./build.sh deploy
+> ./build.sh build && ./build.sh deploy
 # build and deploy callee
 > cd quilt/merge_func/merge-{caller_language}-and-{callee_language}/example/callee
-> ./build.sh build
-> ./build.sh deploy
+> ./build.sh build && ./build.sh deploy
 # build merged function image
 > cd quilt/merge_func/merge-{caller_language}-and-{callee_language}/example/merge_script
-> ./build.sh merge
-> ./build.sh deploy
+> ./build.sh merge && ./build.sh deploy
 ```
 
 #### Invoke functions
