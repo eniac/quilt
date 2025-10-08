@@ -15,11 +15,12 @@ char* get_arg_from_caller(){
   return buf; 
 }
 
-void main(void){
+int main(void){
   char* input = get_arg_from_caller();
   char* buf;
   buf = (char*)malloc(sizeof(char)*2000);
   strcpy(buf, "From the C callee: ");
   strcpy(buf+19, input);
   send_return_value_to_caller(buf);
+  return 0;
 }

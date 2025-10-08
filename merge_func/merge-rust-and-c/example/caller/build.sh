@@ -44,6 +44,13 @@ function delete_fission {
     -n fission-function
 }
 
+
+function invoke {
+  curl -XPOST http://localhost:8888/$FUNC \
+  -d '{"msg":"hello world"}'
+}
+
+
 case "$1" in
 build)
     build_fission_container
@@ -53,5 +60,8 @@ deploy)
     ;;
 delete)
     delete_fission
+    ;;
+invoke)
+    invoke
     ;;
 esac

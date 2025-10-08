@@ -2,7 +2,7 @@ ARG USERNAME
 
 FROM ${USERNAME}/c-env as builder
 # Copy all the sources
-COPY caller.c ./caller.c
+COPY callee.c ./callee.c
 COPY Makefile ./Makefile
 
 WORKDIR /function

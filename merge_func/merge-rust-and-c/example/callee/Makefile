@@ -1,5 +1,5 @@
 all:
-	gcc callee.c -o callee
+	gcc callee.c -o function
 
 clean:
-	rm caller callee
+	rm function
