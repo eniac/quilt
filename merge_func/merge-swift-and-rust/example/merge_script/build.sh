@@ -41,7 +41,7 @@ function deploy {
 
 function invoke {
   curl -XPOST http://localhost:8888/$FUNC \
-  -d '{"iter_count":13}'
+  -d '{"msg":"hello world"}'
 }
 
 case "$1" in

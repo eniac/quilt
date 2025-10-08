@@ -23,7 +23,7 @@ function deploy_swift {
 
 function invoke_swift {
   curl -XPOST http://localhost:8888/$FUNC \
-  -d ''
+  -d '{"msg":"hello world"}'
 }
 
 case "$1" in
