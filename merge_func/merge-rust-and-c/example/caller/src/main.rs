@@ -3,7 +3,7 @@ use std::io::{self, Read};
 
 fn make_rpc(func_name: &str, input: String) -> String {
   let mut easy = Easy::new();
-  let mut url = String::from("http://router.fission.svc.cluster.local.:80");
+  let mut url = String::from("http://router.fission.svc.cluster.local.:80/");
   let mut input_to_be_sent = (&input).as_bytes();
 //  let mut url = String::from("http://127.0.0.1:8080/function/");
   url.push_str(func_name);
