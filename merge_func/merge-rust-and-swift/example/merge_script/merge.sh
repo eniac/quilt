@@ -3,11 +3,14 @@
 LLVM_DIR=/llvm/bin
 RUST_LIB=/root/.rustup/toolchains/1.76-x86_64-unknown-linux-gnu/lib
 LIBSTD="$(printf '%s\n' "$RUST_LIB"/libstd*.so | head -n 1 || true)"
-
 base="${LIBSTD##*/}"     # e.g., libstd-66d8041607d2929b.so
 base="${base%.so}"     # e.g., libstd-66d8041607d2929b
-
 LIBSTD_BASENAME="${base:0:1}${base:3}"   # e.g., lstd-66d8041607d2929b
+
+LIBRUSTC="$(printf '%s\n' "$RUST_LIB"/librustc*.so | head -n 1 || true)"
+base="${LIBRUSTC##*/}"
+base="${base%.so}"
+LIBRUSTC_BASENAME="${base:0:1}${base:3}"
 
 SWIFT_DIR=/root/.local/share/swiftly/toolchains/6.0.3/usr/bin
 SWIFT_LIB=/root/.local/share/swiftly/toolchains/6.0.3/usr/lib/swift/linux
@@ -42,7 +45,7 @@ function merge {
 
 function link {
   $LLVM_DIR/llc -filetype=obj -relocation-model=pic -o merged.o merged_new.ll
-  $LLVM_DIR/clang -fPIC -L$RUST_LIB -L$SWIFT_LIB -o function merged.o -lswiftCore -lswiftSwiftOnoneSupport -lswift_Concurrency -lswift_StringProcessing -lswift_RegexParser -lswiftGlibc -lBlocksRuntime -ldispatch -lswiftDispatch -lFoundation -lFoundationEssentials -lFoundationInternationalization -lFoundationNetworking -lstdc++ -lcrypto -lcurl -$LIBSTD_BASENAME -lm -lc -lssl
+  $LLVM_DIR/clang -fPIC -L$RUST_LIB -L$SWIFT_LIB -o function merged.o -lswiftCore -lswiftSwiftOnoneSupport -lswift_Concurrency -lswift_StringProcessing -lswift_RegexParser -lswiftGlibc -lBlocksRuntime -ldispatch -lswiftDispatch -lFoundation -lFoundationEssentials -lFoundationInternationalization -lFoundationNetworking -lstdc++ -lcrypto -lcurl -$LIBSTD_BASENAME -lm -lc -lssl -$LIBRUSTC_BASENAME
 }
 
 function build {

@@ -25,7 +25,7 @@ const (
 	//   SWIFT_LIB_DIR=/path/to/swift/libs
 	//   RUST_LIB_DIR=/path/to/rust/std/lib
 	DEFAULT_SWIFT_LIB = "/root/.local/share/swiftly/toolchains/6.0.3/usr/lib/swift/linux"
-	DEFAULT_RUST_LIB  = "/root/.rustup/toolchains/1.76-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib"
+	DEFAULT_RUST_LIB  = "/root/.rustup/toolchains/1.76-x86_64-unknown-linux-gnu/lib"
 )
 
 var specialized bool
