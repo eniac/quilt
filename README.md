@@ -413,104 +413,41 @@ cd quilt/test/wrk2_fission/c_fanout
 ### Example of merging functions in different languages
 Quilt is able to merge functions across various languages. We give 6 examples here if you are interested. We will be cleaning up the code for the many other examples in the coming days. We did not report any cross-language experiments in our evaluation, so there is nothing to reproduce.
 
-#### Build llvm-17 docker image
+#### Build llvm-17 docker image and Fission multi-language environment
 ```bash
 > cd quilt/dockerfiles/LLVM/llvm-17
-> /build.sh llvm
+> ./build.sh llvm
+> cd quilt/dockerfiles/container-based/fission-multi-lang-env
+> ./build.sh
 ```
 
-#### Test merging C caller and Rust callee
+#### Build caller, callee and merged function image
+- `caller_language` can be one from `c`, `rust` and `swift`
+- `caller_language` can be one from `c`, `rust` and `swift`
+- caller and callee should be in different languages.
+
 ```bash
 # build and deploy caller
-> cd quilt/merge_func/merge-c-and-rust/example/caller
+> cd quilt/merge_func/merge-{caller_language}-and-{callee_language}/example/caller
 > ./build.sh build
 > ./build.sh deploy
 # build and deploy callee
-> cd quilt/merge_func/merge-c-and-rust/example/callee
+> cd quilt/merge_func/merge-{caller_language}-and-{callee_language}/example/callee
 > ./build.sh build
 > ./build.sh deploy
 # build merged function image
-> cd quilt/merge_func/merge-c-and-rust/example/merge_script
+> cd quilt/merge_func/merge-{caller_language}-and-{callee_language}/example/merge_script
 > ./build.sh merge
 > ./build.sh deploy
 ```
 
-#### Test merging Rust caller and C callee
-```bash
-# build and deploy caller
-> cd quilt/merge_func/merge-rust-and-c/example/caller
-> ./build.sh build
-> ./build.sh deploy
-# build and deploy callee
-> cd quilt/merge_func/merge-rust-and-c/example/callee
-> ./build.sh build
-> ./build.sh deploy
-# build merged function image
-> cd quilt/merge_func/merge-rust-and-c/example/merge_script
-> ./build.sh merge
-> ./build.sh deploy
-```
+#### Invoke functions
 
-#### Test merging Swift caller and Rust callee
 ```bash
-# build and deploy caller
-> cd quilt/merge_func/merge-swift-and-rust/example/caller
-> ./build.sh build
-> ./build.sh deploy
-# build and deploy callee
-> cd quilt/merge_func/merge-swift-and-rust/example/callee
-> ./build.sh build
-> ./build.sh deploy
-# build merged function image
-> cd quilt/merge_func/merge-swift-and-rust/example/merge_script
-> ./build.sh merge
-> ./build.sh deploy
-```
-
-#### Test merging Rust caller and Swift callee
-```bash
-# build and deploy caller
-> cd quilt/merge_func/merge-rust-and-swift/example/caller
-> ./build.sh build
-> ./build.sh deploy
-# build and deploy callee
-> cd quilt/merge_func/merge-rust-and-swift/example/callee
-> ./build.sh build
-> ./build.sh deploy
-# build merged function image
-> cd quilt/merge_func/merge-rust-and-swift/example/merge_script
-> ./build.sh merge
-> ./build.sh deploy
-```
-
-#### Test merging Swift caller and C callee
-```bash
-# build and deploy caller
-> cd quilt/merge_func/merge-swift-and-c/example/caller
-> ./build.sh build
-> ./build.sh deploy
-# build and deploy callee
-> cd quilt/merge_func/merge-swift-and-c/example/callee
-> ./build.sh build
-> ./build.sh deploy
-# build merged function image
-> cd quilt/merge_func/merge-swift-and-c/example/merge_script
-> ./build.sh merge
-> ./build.sh deploy
-```
-
-#### Test merging C caller and Swift callee
-```bash
-# build and deploy caller
-> cd quilt/merge_func/merge-c-and-swift/example/caller
-> ./build.sh build
-> ./build.sh deploy
-# build and deploy callee
-> cd quilt/merge_func/merge-c-and-swift/example/callee
-> ./build.sh build
-> ./build.sh deploy
-# build merged function image
-> cd quilt/merge_func/merge-c-and-swift/example/merge_script
-> ./build.sh merge
-> ./build.sh deploy
+# invoke original workflow
+> cd quilt/merge_func/merge-{caller_language}-and-{callee_language}/example/caller
+> ./build.sh invoke
+# invoke merged workflow
+> cd quilt/merge_func/merge-{caller_language}-and-{callee_language}/example/merge_script
+> ./build.sh invoke
 ```
