@@ -8,6 +8,7 @@ WORKDIR /
 RUN wget https://go.dev/dl/go1.23.4.linux-amd64.tar.gz
 RUN tar -vxf go1.23.4.linux-amd64.tar.gz
 ENV PATH="/go/bin:$PATH"
+ENV LD_LIBRARY_PATH="/root/.local/share/swiftly/toolchains/6.0.3/usr/lib/swift/linux:/root/.rustup/toolchains/1.76-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib"
 
 WORKDIR /binary
 COPY *.go /binary/
@@ -26,10 +27,7 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get update \
   && rm -rf /var/lib/apt/lists/*
   
 COPY --from=builder /binary/server /app/server
-
-ENV SWIFT_LIB=/root/.local/share/swiftly/toolchains/6.0.3/usr/lib/swift/linux
-ENV RUST_LIB=/root/.rustup/toolchains/1.76-x86_64-unknown-linux-gnu/lib
-ENV LD_LIBRARY_PATH=$SWIFT_LIB:$LD_LIBRARY_PATH:$RUST_LIB
+ENV LD_LIBRARY_PATH="/root/.local/share/swiftly/toolchains/6.0.3/usr/lib/swift/linux:/root/.rustup/toolchains/1.76-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib"
 
 EXPOSE 8888
 ENTRYPOINT ["./server"]
