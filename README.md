@@ -1,3 +1,19 @@
+Quilt, a serverless optimizer that automatically merges workflows that consist of many functions
+(possibly in different languages) into one process thereby
+avoiding high invocation latency, communication overhead,
+and long chains of cold starts. Instead of merging all functions,
+Quilt takes into account the provider’s resource constraints
+to decide which functions to merge. Quilt is compatible with
+existing platforms without modification (Fission, OpenWhisk,
+and OpenFaaS), can merge functions in different languages
+(C, C++, Swift, Go, Rust) by acting at the level of LLVM IR,
+and requires no input or help from developers. Our evaluation
+shows that Quilt improves median workflow completion time
+by 45.63%–70.95% and throughput by 2.05×–12.87×.
+
+A description of how we implemented Quilt and experimental results 
+of Quilt are in [SOSP'25 paper](https://dl.acm.org/doi/10.1145/3731569.3764830)
+
 # Pre-requisites
 
 To reproduce our results you will need (1) a computing cluster with enough machines / CPUs, each node can run `sudo` command without being prompted for a password (2) a local machine that has SSH access to every node in the computing cluster, and (3) an account in [DockerHub](https://hub.docker.com/). 
